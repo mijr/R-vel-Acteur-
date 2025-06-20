@@ -18,14 +18,14 @@ export default function Footer() {
     >
       <Typography variant="caption">
         &copy; All rights reserved{' '}
-        <Typography component={Link} href="https://codedthemes.com/about-us/" underline="hover" target="_blank" color="secondary.main">
-          CodedThemes
+        <Typography component={Link} href="https://Rével'Acteur.com/about-us/" underline="hover" target="_blank" color="secondary.main">
+          Rével'Acteur
         </Typography>
       </Typography>
       <Stack direction="row" sx={{ gap: 1.5, alignItems: 'center', justifyContent: 'space-between' }}>
         <Link
           component={RouterLink}
-          to="https://x.com/codedthemes"
+          to="https://x.com/Rével'Acteur"
           underline="hover"
           target="_blank"
           variant="caption"
@@ -35,7 +35,7 @@ export default function Footer() {
         </Link>
         <Link
           component={RouterLink}
-          to="https://discord.com/invite/p2E2WhCb6s"
+          to="https://discord.com/invite/Rével'Acteur"
           underline="hover"
           target="_blank"
           variant="caption"

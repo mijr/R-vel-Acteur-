@@ -1,13 +1,15 @@
+// src/routes/index.js (or wherever createBrowserRouter is called)
 import { createBrowserRouter } from 'react-router-dom';
 
-// routes
+import LandingRoutes from './LandingRoutes';
 import AuthenticationRoutes from './AuthenticationRoutes';
 import MainRoutes from './MainRoutes';
 
-// ==============================|| ROUTING RENDER ||============================== //
-
-const router = createBrowserRouter([MainRoutes, AuthenticationRoutes], {
-  basename: import.meta.env.VITE_APP_BASE_NAME
-});
+const router = createBrowserRouter(
+  [LandingRoutes, AuthenticationRoutes, MainRoutes], // ⚠️ Order matters!
+  {
+    basename: import.meta.env.VITE_APP_BASE_NAME
+  }
+);
 
 export default router;
