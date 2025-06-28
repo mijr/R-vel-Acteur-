@@ -6,7 +6,7 @@ import AuthenticationRoutes from './AuthenticationRoutes';
 import MainRoutes from './MainRoutes';
 
 const router = createBrowserRouter(
-  [LandingRoutes, AuthenticationRoutes, MainRoutes], // ⚠️ Order matters!
+  [LandingRoutes, AuthenticationRoutes, MainRoutes], // 
   {
     basename: import.meta.env.VITE_APP_BASE_NAME
   }

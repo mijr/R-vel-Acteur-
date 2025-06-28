@@ -1,66 +1,85 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
-
-// material-ui
+import { Link, useNavigate } from 'react-router-dom';
+import { gql, useMutation } from '@apollo/client';
+import {
+  Box, Button, Checkbox, FormControl, FormControlLabel, Grid, IconButton,
+  InputAdornment, InputLabel, OutlinedInput, Typography
+} from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import Button from '@mui/material/Button';
-import Checkbox from '@mui/material/Checkbox';
-import FormControl from '@mui/material/FormControl';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Grid from '@mui/material/Grid';
-import IconButton from '@mui/material/IconButton';
-import InputAdornment from '@mui/material/InputAdornment';
-import InputLabel from '@mui/material/InputLabel';
-import OutlinedInput from '@mui/material/OutlinedInput';
-import Typography from '@mui/material/Typography';
-import Box from '@mui/material/Box';
-
-// project imports
 import AnimateButton from 'ui-component/extended/AnimateButton';
-
-// assets
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
+import Swal from 'sweetalert2';
 
-// ===============================|| JWT - LOGIN ||=============================== //
+const LOGIN_MUTATION = gql`
+  mutation Login($email: String!, $password: String!) {
+    login(email: $email, password: $password) {
+      token
+      user {
+        id
+        email
+        firstName
+        lastName
+      }
+    }
+  }
+`;
 
 export default function AuthLogin() {
   const theme = useTheme();
+  const navigate = useNavigate();
 
   const [checked, setChecked] = useState(true);
-
   const [showPassword, setShowPassword] = useState(false);
-  const handleClickShowPassword = () => {
-    setShowPassword(!showPassword);
-  };
 
-  const handleMouseDownPassword = (event) => {
-    event.preventDefault();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
+  const [login] = useMutation(LOGIN_MUTATION);
+
+  const handleLogin = async () => {
+    try {
+      const { data } = await login({ variables: { email, password } });
+      localStorage.setItem('token', data.login.token);
+      Swal.fire({
+        icon: 'success',
+        title: 'Connexion réussie',
+        text: `Bienvenue ${data.login.user.firstName || ''} !`
+      }).then(() => {
+        navigate('/dashboard/default');
+      });
+    } catch (err) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Erreur de connexion',
+        text: err.message || 'Identifiants incorrects',
+      });
+    }
   };
 
   return (
     <>
       <FormControl fullWidth sx={{ ...theme.typography.customInput }}>
-        <InputLabel htmlFor="outlined-adornment-email-login">Email Address / Username</InputLabel>
-        <OutlinedInput id="outlined-adornment-email-login" type="email" value="info@codedthemes.com" name="email" />
+        <InputLabel htmlFor="login-email">Email</InputLabel>
+        <OutlinedInput
+          id="login-email"
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          label="Email"
+        />
       </FormControl>
 
       <FormControl fullWidth sx={{ ...theme.typography.customInput }}>
-        <InputLabel htmlFor="outlined-adornment-password-login">Password</InputLabel>
+        <InputLabel htmlFor="login-password">Password</InputLabel>
         <OutlinedInput
-          id="outlined-adornment-password-login"
+          id="login-password"
           type={showPassword ? 'text' : 'password'}
-          value="123456"
-          name="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
           endAdornment={
             <InputAdornment position="end">
-              <IconButton
-                aria-label="toggle password visibility"
-                onClick={handleClickShowPassword}
-                onMouseDown={handleMouseDownPassword}
-                edge="end"
-                size="large"
-              >
+              <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
                 {showPassword ? <Visibility /> : <VisibilityOff />}
               </IconButton>
             </InputAdornment>
@@ -69,22 +88,19 @@ export default function AuthLogin() {
         />
       </FormControl>
 
-      <Grid container sx={{ alignItems: 'center', justifyContent: 'space-between' }}>
-        <Grid>
-          <FormControlLabel
-            control={<Checkbox checked={checked} onChange={(event) => setChecked(event.target.checked)} name="checked" color="primary" />}
-            label="Keep me logged in"
-          />
-        </Grid>
-        <Grid>
-          <Typography variant="subtitle1" component={Link} to="/forgot-password" color="secondary" sx={{ textDecoration: 'none' }}>
-            Forgot Password?
-          </Typography>
-        </Grid>
+      <Grid container justifyContent="space-between">
+        <FormControlLabel
+          control={<Checkbox checked={checked} onChange={(e) => setChecked(e.target.checked)} />}
+          label="Keep me logged in"
+        />
+        <Typography component={Link} to="/pages/forgot-password" variant="subtitle2" color="secondary">
+          Forgot Password?
+        </Typography>
       </Grid>
-      <Box sx={{ mt: 2 }}>
+
+      <Box mt={2}>
         <AnimateButton>
-          <Button color="secondary" fullWidth size="large" type="submit" variant="contained">
+          <Button fullWidth color="secondary" variant="contained" onClick={handleLogin}>
             Sign In
           </Button>
         </AnimateButton>

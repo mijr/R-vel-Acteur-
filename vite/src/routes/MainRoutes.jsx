@@ -8,7 +8,7 @@ import Loadable from 'ui-component/Loadable';
 const DashboardDefault = Loadable(lazy(() => import('views/dashboard/Default')));
 
 // utilities routing
-const UtilsTypography = Loadable(lazy(() => import('views/utilities/Typography')));
+const AppointmentList = Loadable(lazy(() => import('views/utilities/AppointmentList')));
 const UtilsColor = Loadable(lazy(() => import('views/utilities/Color')));
 const UtilsShadow = Loadable(lazy(() => import('views/utilities/Shadow')));
 
@@ -35,8 +35,8 @@ const MainRoutes = {
       ]
     },
     {
-      path: 'typography',
-      element: <UtilsTypography />
+      path: 'AppointmentList',
+      element: <AppointmentList />
     },
     {
       path: 'color',

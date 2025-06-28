@@ -1,246 +1,231 @@
-// src/pages/LandingPage.jsx
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import HeroSection from '../components/sections/HeroSection';
+import ServicesSection from '../components/sections/ServicesSection';
+import TestimonialsSection from '../components/sections/TestimonialsSection';
+import AboutSection from '../components/sections/AboutSection';
+import FAQSection from '../components/sections/FAQSection';
+import NewsSection from '../components/sections/NewsSection';
+import BlogSection from '../components/sections/BlogSection';
+import FooterSection from '../components/sections/Footer';
 
 const LandingPage = () => {
-    const navigate = useNavigate(); // <-- Hook
+  const navigate = useNavigate();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
-  const handleStart = () => {
-    navigate('/dashboard/default'); // <-- Navigate to Dashboard
-  };
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 10);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const handleStart = () => navigate('/pages/login');
+  const handleAppointment = () => navigate('/appointment');
+  const handleLogin = () => navigate('/pages/login');
+  const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
+
+  const navItems = [
+    'Accueil', 'Nos prestations', 'Témoignages', 
+    'Qui sommes-nous', 'FAQ', 'Actualités', 'Blog'
+  ];
+
   return (
-    <div style={{ backgroundColor: '#0f172a', color: '#fff', fontFamily: 'sans-serif' }}>
-      {/* Navigation Bar */}
-      <header style={navContainer}>
-        <div style={navContent}>
-          <h2 style={{ color: '#38bdf8', fontSize: '1.5rem', margin: 0 }}>Rével'Acteur</h2>
-          <nav style={navLinks}>
-            {[
-              'Accueil',
-              'Nos prestations',
-              'Témoignages',
-              'Qui sommes-nous',
-              'FAQ',
-              'Actualités',
-              'Blog',
-            ].map((item, i) => (
-              <a key={i} href="#" style={navLink}>
+    <div style={{ backgroundColor: '#ffffff', color: '#1e293b', fontFamily: "'Inter', sans-serif" }}>
+      {/* Navigation */}
+      <header style={{
+        padding: '20px',
+        position: 'sticky',
+        top: 0,
+        zIndex: 50,
+        transition: 'all 0.3s ease',
+        backgroundColor: scrolled ? 'rgba(255, 255, 255, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+        boxShadow: scrolled ? '0 4px 20px rgba(0, 0, 0, 0.1)' : 'none',
+      }}>
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          maxWidth: '1200px',
+          margin: '0 auto',
+          width: '100%',
+        }}>
+          <motion.h2 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5 }}
+            style={{ color: '#38bdf8', fontSize: '1.5rem', margin: 0, fontWeight: '700' }}
+          >
+            Rével'Acteur
+          </motion.h2>
+
+          <nav style={{
+            display: 'flex',
+            gap: '24px',
+            alignItems: 'center',
+            '@media (max-width: 768px)': { display: 'none' },
+          }}>
+            {navItems.map((item, i) => (
+              <motion.a
+                key={i}
+                href={`#${item.toLowerCase().replace(' ', '-')}`}
+                style={{
+                  color: '#1e293b',
+                  textDecoration: 'none',
+                  fontSize: '0.875rem',
+                  fontWeight: '500',
+                  transition: 'color 0.2s ease',
+                }}
+                whileHover={{ color: '#38bdf8' }}
+                transition={{ duration: 0.2 }}
+              >
                 {item}
-              </a>
+              </motion.a>
             ))}
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <motion.button 
+                onClick={handleAppointment} 
+                style={{
+                  background: 'transparent',
+                  border: '1px solid #38bdf8',
+                  color: '#38bdf8',
+                  padding: '8px 16px',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontWeight: '500',
+                  fontSize: '0.875rem',
+                }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                Prendre rendez-vous
+              </motion.button>
+              <motion.button 
+                onClick={handleLogin} 
+                style={{ 
+                  background: '#38bdf8',
+                  border: '1px solid #38bdf8',
+                  color: '#ffffff',
+                  padding: '8px 16px',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontWeight: '500',
+                  fontSize: '0.875rem',
+                }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                Connexion
+              </motion.button>
+            </div>
           </nav>
+
+          <button 
+            onClick={toggleMenu}
+            style={{
+              display: 'none',
+              background: 'transparent',
+              border: 'none',
+              cursor: 'pointer',
+              padding: '8px',
+              '@media (max-width: 768px)': { display: 'block' },
+            }}
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M3 12H21" stroke="#1e293b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M3 6H21" stroke="#1e293b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M3 18H21" stroke="#1e293b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
         </div>
+
+        {isMenuOpen && (
+          <motion.div 
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3 }}
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '12px',
+              padding: '20px',
+              backgroundColor: '#ffffff',
+              boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+              position: 'absolute',
+              top: '100%',
+              left: 0,
+              right: 0,
+              zIndex: 40,
+            }}
+          >
+            {navItems.map((item, i) => (
+              <motion.a
+                key={i}
+                href={`#${item.toLowerCase().replace(' ', '-')}`}
+                style={{
+                  color: '#1e293b',
+                  textDecoration: 'none',
+                  fontSize: '0.875rem',
+                  fontWeight: '500',
+                  padding: '8px 0',
+                }}
+                onClick={() => setIsMenuOpen(false)}
+                whileHover={{ color: '#38bdf8' }}
+                transition={{ duration: 0.2 }}
+              >
+                {item}
+              </motion.a>
+            ))}
+            <motion.button 
+              onClick={() => {
+                handleAppointment();
+                setIsMenuOpen(false);
+              }}
+              style={{ 
+                color: '#1e293b',
+                textDecoration: 'none',
+                fontSize: '0.875rem',
+                fontWeight: '500',
+                padding: '12px 0',
+                borderTop: '1px solid #e2e8f0',
+              }}
+            >
+              Prendre rendez-vous
+            </motion.button>
+            <motion.button 
+              onClick={() => {
+                handleLogin();
+                setIsMenuOpen(false);
+              }}
+              style={{ 
+                color: '#1e293b',
+                textDecoration: 'none',
+                fontSize: '0.875rem',
+                fontWeight: '500',
+                padding: '8px 0',
+              }}
+            >
+              Connexion
+            </motion.button>
+          </motion.div>
+        )}
       </header>
 
-      {/* Hero Section */}
-      <section style={{ padding: '60px 20px', textAlign: 'center' }}>
-        <h1 style={{ fontSize: '2.5rem', color: '#38bdf8' }}>
-          Des outils alimentés par l'IA pour les équipes produit
-        </h1>
-        <p style={{ marginTop: 20, maxWidth: 600, marginInline: 'auto' }}>
-          Notre modèle de page d’accueil fonctionne sur tous les appareils. Configurez-la une seule fois
-          et obtenez des résultats superbes à vie.
-        </p>
-        <div style={{ marginTop: 30 }}>
-         <button style={btnStyle} onClick={handleStart}>
-            Commencer
-          </button>
-          <button style={{ ...btnStyle, backgroundColor: '#1e293b' }}>Planifier une démo</button>
-        </div>
-      </section>
-
-      {/* Features */}
-      <section style={sectionStyle}>
-        <h2 style={titleStyle}>Cartographiez votre parcours produit</h2>
-        <p style={subtitleStyle}>
-          Collaborez avec votre équipe en quelques minutes. Intégration fluide avec vos outils préférés.
-        </p>
-        <div style={cardGrid}>
-          {['Outils intégrés', 'Évolutivité', 'Flux de travail sur mesure'].map((title, i) => (
-            <div key={i} style={cardStyle}>
-              <h3>{title}</h3>
-              <p>
-                Développement produit simplifié avec une plateforme cohérente, adaptée aux besoins et aux
-                informations.
-              </p>
-            </div>
-          ))}
-        </div>
-      </section>
-      {/* Nos Prestations */}
-<section style={sectionStyle}>
-  <h2 style={titleStyle}>Nos prestations</h2>
-  <p style={subtitleStyle}>
-    Découvrez notre gamme de services personnalisés, adaptés à vos besoins professionnels et personnels.
-  </p>
-  <div style={cardGrid}>
-    {/* Coaching */}
-    <div style={cardStyle}>
-      <h3>Coaching</h3>
-      <p>Accompagnement individuel ou en équipe pour favoriser l’épanouissement professionnel.</p>
-      <button style={contactBtn}>Nous contacter</button>
-    </div>
-
-    {/* Formation */}
-    <div style={cardStyle}>
-      <h3>Formation</h3>
-      <p>Sessions interactives pour renforcer les compétences clés dans un cadre dynamique.</p>
-      <button style={contactBtn}>Nous contacter</button>
-    </div>
-
-    {/* Médiation */}
-    <div style={cardStyle}>
-      <h3>Médiation</h3>
-      <p>Interventions neutres pour faciliter le dialogue et résoudre les conflits durablement.</p>
-      <button style={contactBtn}>Nous contacter</button>
-    </div>
-  </div>
-</section>
-
-
-      {/* Testimonials */}
-      <section style={sectionStyle}>
-        <h2 style={titleStyle}>Témoignages</h2>
-        <div style={cardGrid}>
-          {['Samsung', 'Moka', 'Forbes'].map((name, i) => (
-            <div key={i} style={testimonialStyle}>
-              <p>"Contenu IA qui change la donne pour notre productivité. Nous sommes conquis!"</p>
-              <small>- {name}</small>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer style={{ padding: '40px 20px', backgroundColor: '#1e293b', color: '#94a3b8' }}>
-        <div style={footerGrid}>
-          {[
-            'Accueil',
-            'Nos prestations',
-            'Témoignages',
-            'Qui sommes-nous',
-            'FAQ',
-            'Actualités',
-            'Blog',
-          ].map((item, i) => (
-            <a key={i} href="#" style={footerLink}>
-              {item}
-            </a>
-          ))}
-        </div>
-       <p style={{ marginTop: 20, textAlign: 'center', fontSize: 12 }}>
-          © {new Date().getFullYear()} Rével'Acteur. Tous droits réservés.
-        </p>
-
-      </footer>
+      {/* Sections */}
+      <HeroSection handleStart={handleStart} />
+      <ServicesSection />
+      <TestimonialsSection />
+      <AboutSection />
+      <FAQSection />
+      <NewsSection />
+      <BlogSection />
+      <FooterSection navItems={navItems} />
     </div>
   );
-};
-
-// --- Styles ---
-const btnStyle = {
-  padding: '10px 20px',
-  margin: '0 10px',
-  border: 'none',
-  borderRadius: 6,
-  backgroundColor: '#38bdf8',
-  color: '#000',
-  fontWeight: 'bold',
-  cursor: 'pointer',
-};
-
-const contactBtn = {
-  marginTop: 15,
-  padding: '8px 16px',
-  border: 'none',
-  borderRadius: 6,
-  backgroundColor: '#38bdf8',
-  color: '#000',
-  fontWeight: 'bold',
-  cursor: 'pointer',
-};
-
-const navContainer = {
-  backgroundColor: '#0f172a',
-  padding: '20px 40px',
-  borderBottom: '1px solid #1e293b',
-  position: 'sticky',
-  top: 0,
-  zIndex: 10,
-};
-
-const navContent = {
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  maxWidth: 1200,
-  margin: '0 auto',
-  flexWrap: 'wrap',
-};
-
-const navLinks = {
-  display: 'flex',
-  gap: 20,
-  flexWrap: 'wrap',
-};
-
-const navLink = {
-  color: '#94a3b8',
-  textDecoration: 'none',
-  fontSize: 16,
-  fontWeight: '500',
-};
-
-const sectionStyle = {
-  padding: '60px 20px',
-  textAlign: 'center',
-};
-
-const titleStyle = {
-  fontSize: '2rem',
-  marginBottom: 10,
-  color: '#38bdf8',
-};
-
-const subtitleStyle = {
-  maxWidth: 600,
-  margin: '0 auto 40px auto',
-  color: '#cbd5e1',
-};
-
-const cardGrid = {
-  display: 'flex',
-  justifyContent: 'center',
-  gap: 20,
-  flexWrap: 'wrap',
-};
-
-const cardStyle = {
-  backgroundColor: '#1e293b',
-  padding: 20,
-  borderRadius: 12,
-  width: 250,
-  color: '#fff',
-};
-
-const testimonialStyle = {
-  backgroundColor: '#0f172a',
-  border: '1px solid #334155',
-  padding: 20,
-  borderRadius: 12,
-  width: 250,
-};
-
-const footerGrid = {
-  display: 'flex',
-  flexWrap: 'wrap',
-  gap: 20,
-  justifyContent: 'center',
-};
-
-const footerLink = {
-  color: '#94a3b8',
-  textDecoration: 'none',
 };
 
 export default LandingPage;

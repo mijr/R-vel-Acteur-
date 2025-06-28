@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-
+import { useNavigate } from 'react-router-dom';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import Divider from '@mui/material/Divider';
 import Grid from '@mui/material/Grid';
@@ -16,6 +16,7 @@ import AuthFooter from 'ui-component/cards/AuthFooter';
 
 export default function Register() {
   const downMD = useMediaQuery((theme) => theme.breakpoints.down('md'));
+   
 
   return (
     <AuthWrapper1>

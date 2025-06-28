@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-
+import { useNavigate } from 'react-router-dom';
 // material-ui
 import { useTheme } from '@mui/material/styles';
 import Avatar from '@mui/material/Avatar';
@@ -42,6 +42,7 @@ export default function ProfileSection() {
   const [notification, setNotification] = useState(false);
   const [selectedIndex] = useState(-1);
   const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
 
   /**
    * anchorRef is used on different components and specifying one type leads to other components throwing an error
@@ -241,7 +242,13 @@ export default function ProfileSection() {
                             }
                           />
                         </ListItemButton>
-                        <ListItemButton sx={{ borderRadius: `${borderRadius}px` }} selected={selectedIndex === 4}>
+                        <ListItemButton
+                          sx={{ borderRadius: `${borderRadius}px` }}
+                          onClick={() => {
+                            localStorage.removeItem('token'); // remove the stored JWT
+                            navigate('/pages/login'); // redirect to login page
+                          }}
+                        >
                           <ListItemIcon>
                             <IconLogout stroke={1.5} size="20px" />
                           </ListItemIcon>

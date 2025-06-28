@@ -18,9 +18,9 @@ const utilities = {
   children: [
     {
       id: 'util-typography',
-      title: 'Typography',
+      title: 'Prise de rendez-vous',
       type: 'item',
-      url: '/typography',
+      url: '/AppointmentList',
       icon: icons.IconTypography,
       breadcrumbs: false
     },

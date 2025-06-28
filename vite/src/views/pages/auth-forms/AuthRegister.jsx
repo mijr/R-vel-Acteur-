@@ -1,35 +1,51 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { gql, useMutation } from '@apollo/client';
+import Swal from 'sweetalert2';
 
 // material-ui
 import { useTheme } from '@mui/material/styles';
-import Button from '@mui/material/Button';
-import Checkbox from '@mui/material/Checkbox';
-import FormControl from '@mui/material/FormControl';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Grid from '@mui/material/Grid';
-import IconButton from '@mui/material/IconButton';
-import InputAdornment from '@mui/material/InputAdornment';
-import InputLabel from '@mui/material/InputLabel';
-import OutlinedInput from '@mui/material/OutlinedInput';
-import TextField from '@mui/material/TextField';
-import Typography from '@mui/material/Typography';
-import Box from '@mui/material/Box';
+import {
+  Button, Checkbox, FormControl, FormControlLabel, Grid,
+  IconButton, InputAdornment, InputLabel, OutlinedInput,
+  TextField, Typography, Box
+} from '@mui/material';
 
 // project imports
 import AnimateButton from 'ui-component/extended/AnimateButton';
 
-// assets
+// icons
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 
-// ===========================|| JWT - REGISTER ||=========================== //
+// GraphQL mutation
+const SIGNUP = gql`
+  mutation Signup($email: String!, $password: String!, $firstName: String!, $lastName: String!) {
+    signup(email: $email, password: $password, firstName: $firstName, lastName: $lastName) {
+      token
+      user {
+        id
+        email
+        role
+      }
+    }
+  }
+`;
+
 
 export default function AuthRegister() {
   const theme = useTheme();
-
   const [showPassword, setShowPassword] = useState(false);
   const [checked, setChecked] = useState(true);
+   const navigate = useNavigate();
+
+  const [firstName, setFirstName] = useState();
+  const [lastName, setLastName] = useState();
+  const [email, setEmail] = useState();
+  const [password, setPassword] = useState();
+
+  const [signup, { loading }] = useMutation(SIGNUP);
 
   const handleClickShowPassword = () => {
     setShowPassword(!showPassword);
@@ -39,43 +55,81 @@ export default function AuthRegister() {
     event.preventDefault();
   };
 
+
+  const handleSubmit = async () => {
+    try {
+      const { data } = await signup({
+        variables: { email, password, firstName, lastName }
+      });
+
+      localStorage.setItem('token', data.signup.token);
+
+      Swal.fire({
+        icon: 'success',
+        title: 'Inscription réussie',
+        text: `Bienvenue ${data.signup.user.email} !`,
+      }).then(() => {
+        // ✅ navigate after success
+        navigate('/pages/login');
+      });
+
+    } catch (err) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Erreur',
+        text: err.message || 'Une erreur est survenue lors de l’inscription.',
+      });
+    }
+  };
+
+
+
   return (
     <>
       <Grid container direction="column" spacing={2} sx={{ justifyContent: 'center' }}>
-        <Grid container sx={{ alignItems: 'center', justifyContent: 'center' }} size={12}>
+        <Grid container sx={{ alignItems: 'center', justifyContent: 'center' }}>
           <Box sx={{ mb: 2 }}>
             <Typography variant="subtitle1">Sign up with Email address</Typography>
           </Box>
         </Grid>
       </Grid>
 
-      <Grid container spacing={{ xs: 0, sm: 2 }}>
-        <Grid size={{ xs: 12, sm: 6 }}>
+     <Grid container spacing={2}>
+        <Grid item xs={12} sm={6}>
           <TextField
             fullWidth
             label="First Name"
-            margin="normal"
             name="firstName"
             type="text"
-            value="Jhones"
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
             sx={{ ...theme.typography.customInput }}
           />
         </Grid>
-        <Grid size={{ xs: 12, sm: 6 }}>
+        <Grid item xs={12} sm={6}>
           <TextField
             fullWidth
             label="Last Name"
-            margin="normal"
             name="lastName"
             type="text"
-            value="Doe"
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
             sx={{ ...theme.typography.customInput }}
           />
         </Grid>
       </Grid>
+
+
       <FormControl fullWidth sx={{ ...theme.typography.customInput }}>
         <InputLabel htmlFor="outlined-adornment-email-register">Email Address / Username</InputLabel>
-        <OutlinedInput id="outlined-adornment-email-register" type="email" value="jones@doe.com" name="email" />
+        <OutlinedInput
+          id="outlined-adornment-email-register"
+          type="email"
+          value={email}
+          name="email"
+          onChange={(e) => setEmail(e.target.value)}
+          label="Email Address / Username"
+        />
       </FormControl>
 
       <FormControl fullWidth sx={{ ...theme.typography.customInput }}>
@@ -83,8 +137,9 @@ export default function AuthRegister() {
         <OutlinedInput
           id="outlined-adornment-password-register"
           type={showPassword ? 'text' : 'password'}
-          value="Jhones@123"
+          value={password}
           name="password"
+          onChange={(e) => setPassword(e.target.value)}
           label="Password"
           endAdornment={
             <InputAdornment position="end">
@@ -103,14 +158,14 @@ export default function AuthRegister() {
       </FormControl>
 
       <Grid container sx={{ alignItems: 'center', justifyContent: 'space-between' }}>
-        <Grid>
+        <Grid item>
           <FormControlLabel
             control={<Checkbox checked={checked} onChange={(event) => setChecked(event.target.checked)} name="checked" color="primary" />}
             label={
               <Typography variant="subtitle1">
                 Agree with &nbsp;
                 <Typography variant="subtitle1" component={Link} to="#">
-                  Terms & Condition.
+                  Terms & Conditions
                 </Typography>
               </Typography>
             }
@@ -120,8 +175,17 @@ export default function AuthRegister() {
 
       <Box sx={{ mt: 2 }}>
         <AnimateButton>
-          <Button disableElevation fullWidth size="large" type="submit" variant="contained" color="secondary">
-            Sign up
+          <Button
+            disableElevation
+            fullWidth
+            size="large"
+            type="button"
+            variant="contained"
+            color="secondary"
+            onClick={handleSubmit}
+            disabled={loading}
+          >
+            {loading ? 'Signing up...' : 'Sign up'}
           </Button>
         </AnimateButton>
       </Box>
