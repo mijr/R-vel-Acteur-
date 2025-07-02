@@ -246,7 +246,7 @@ export default function ProfileSection() {
                           sx={{ borderRadius: `${borderRadius}px` }}
                           onClick={() => {
                             localStorage.removeItem('token'); // remove the stored JWT
-                            navigate('/pages/login'); // redirect to login page
+                            navigate('/'); // redirect to login page
                           }}
                         >
                           <ListItemIcon>

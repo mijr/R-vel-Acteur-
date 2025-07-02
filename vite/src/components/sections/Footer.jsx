@@ -1,7 +1,20 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 
-const Footer = ({ navItems }) => {
+const Footer = () => {
+  const navigate = useNavigate();
+
+  const navItems = [
+    { label: 'Accueil',path: '/' },
+    { label: 'Nos prestations', anchor: '#nos-prestations' },
+    { label: 'Témoignages', anchor: '#témoignages' },
+    { label: 'Qui sommes-nous', anchor: '#qui-sommes-nous' },
+    { label: 'FAQ', anchor: '#faq' },
+    { label: 'Actualités', path: '/news' },
+    { label: 'Blog', path: '/blog' },
+  ];
+
   return (
     <motion.footer 
       style={{ padding: '60px 20px', backgroundColor: '#1e293b', color: '#94a3b8' }}
@@ -17,62 +30,55 @@ const Footer = ({ navItems }) => {
               Votre partenaire en développement professionnel et personnel.
             </p>
           </div>
-          
+
           <div>
             <h4 style={{ color: '#ffffff', fontSize: '1rem', marginBottom: '16px' }}>Navigation rapide</h4>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {navItems.map((item, i) => (
-                <a 
-                  key={i} 
-                  href={`#${item.toLowerCase().replace(' ', '-')}`} 
-                  style={{ 
-                    color: '#94a3b8',
-                    textDecoration: 'none',
-                    fontSize: '0.875rem',
-                    transition: 'color 0.2s ease',
-                    ':hover': { color: '#ffffff' },
-                  }}
-                >
-                  {item}
-                </a>
-              ))}
+              {navItems.map((item, i) =>
+                item.anchor ? (
+                  <a
+                    key={i}
+                    href={item.anchor}
+                    style={{ color: '#ffffff', textDecoration: 'none' }}
+                  >
+                    {item.label}
+                  </a>
+                ) : (
+                  <button
+                    key={i}
+                    onClick={() => navigate(item.path)}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: '#ffffff',
+                      cursor: 'pointer',
+                      padding: 0,
+                      textAlign: 'left',
+                    }}
+                  >
+                    {item.label}
+                  </button>
+                )
+              )}
             </div>
           </div>
-          
+
           <div>
             <h4 style={{ color: '#ffffff', fontSize: '1rem', marginBottom: '16px' }}>Contact</h4>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <a href="mailto:contact@revelacteur.com" style={{ 
-                color: '#94a3b8',
-                textDecoration: 'none',
-                fontSize: '0.875rem',
-                transition: 'color 0.2s ease',
-                ':hover': { color: '#ffffff' },
-              }}>
+              <a href="mailto:contact@revelacteur.com" style={{ color: '#94a3b8', textDecoration: 'none' }}>
                 contact@revelacteur.com
               </a>
-              <a href="tel:+123456789" style={{ 
-                color: '#94a3b8',
-                textDecoration: 'none',
-                fontSize: '0.875rem',
-                transition: 'color 0.2s ease',
-                ':hover': { color: '#ffffff' },
-              }}>
+              <a href="tel:+123456789" style={{ color: '#94a3b8', textDecoration: 'none' }}>
                 +1 234 567 89
               </a>
-              <a href="/appointment" style={{ 
-                color: '#38bdf8',
-                textDecoration: 'none',
-                fontSize: '0.875rem',
-                transition: 'color 0.2s ease',
-                ':hover': { color: '#ffffff' },
-              }}>
+              <a href="/appointment" style={{ color: '#38bdf8', textDecoration: 'none' }}>
                 Prendre rendez-vous
               </a>
             </div>
           </div>
         </div>
-        
+
         <div style={{ marginTop: '40px', borderTop: '1px solid #334155', paddingTop: '20px', textAlign: 'center' }}>
           <p style={{ fontSize: '0.875rem' }}>
             © {new Date().getFullYear()} Rével'Acteur. Tous droits réservés.

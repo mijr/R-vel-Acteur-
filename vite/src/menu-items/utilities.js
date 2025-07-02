@@ -1,9 +1,16 @@
 // assets
-import { IconTypography, IconPalette, IconShadow, IconWindmill } from '@tabler/icons-react';
+import {
+  IconCalendarEvent,
+  IconCalendarPlus,
+  IconPalette,
+  IconShadow,
+  IconWindmill
+} from '@tabler/icons-react';
 
 // constant
 const icons = {
-  IconTypography,
+  IconCalendarEvent,
+  IconCalendarPlus,
   IconPalette,
   IconShadow,
   IconWindmill
@@ -17,11 +24,19 @@ const utilities = {
   type: 'group',
   children: [
     {
-      id: 'util-typography',
-      title: 'Prise de rendez-vous',
+      id: 'view-appointments',
+      title: 'Mes rendez-vous',
       type: 'item',
       url: '/AppointmentList',
-      icon: icons.IconTypography,
+      icon: icons.IconCalendarEvent,
+      breadcrumbs: false
+    },
+    {
+      id: 'book-event',
+      title: 'Réserver un rendez-vous',
+      type: 'item',
+      url: '/BookEvent',
+      icon: icons.IconCalendarPlus,
       breadcrumbs: false
     },
     {

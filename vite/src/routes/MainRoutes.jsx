@@ -9,6 +9,7 @@ const DashboardDefault = Loadable(lazy(() => import('views/dashboard/Default')))
 
 // utilities routing
 const AppointmentList = Loadable(lazy(() => import('views/utilities/AppointmentList')));
+const BookEvent = Loadable(lazy(() => import('views/utilities/BookEvent')));
 const UtilsColor = Loadable(lazy(() => import('views/utilities/Color')));
 const UtilsShadow = Loadable(lazy(() => import('views/utilities/Shadow')));
 
@@ -37,6 +38,10 @@ const MainRoutes = {
     {
       path: 'AppointmentList',
       element: <AppointmentList />
+    },
+    {
+     path: 'BookEvent',
+      element: <BookEvent />  
     },
     {
       path: 'color',

@@ -9,20 +9,18 @@ const AboutSection = () => {
       description: 'Chaque accompagnement commence par une écoute profonde de vos besoins'
     },
      {
-              title: 'Authenticité',
-              description: 'Nous croyons en des relations transparentes et sincères'
-            },
-            {
-              title: 'Innovation',
-              description: 'Nos méthodes évoluent constamment pour plus d\'efficacité'
-            },
-            {
-              title: 'Engagement',
-              description: 'Nous nous engageons pleinement dans chaque accompagnement'
-            }
-    
+      title: 'Authenticité',
+      description: 'Nous croyons en des relations transparentes et sincères'
+    },
+    {
+      title: 'Innovation',
+      description: 'Nos méthodes évoluent constamment pour plus d\'efficacité'
+    },
+    {
+      title: 'Engagement',
+      description: 'Nous nous engageons pleinement dans chaque accompagnement'
+    }
   ];
-
   return (
     <motion.section 
       id="qui-sommes-nous"
