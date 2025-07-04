@@ -11,7 +11,7 @@ const DashboardDefault = Loadable(lazy(() => import('views/dashboard/Default')))
 const AppointmentList = Loadable(lazy(() => import('views/utilities/AppointmentList')));
 const BookEvent = Loadable(lazy(() => import('views/utilities/BookEvent')));
 const UtilsColor = Loadable(lazy(() => import('views/utilities/Color')));
-const UtilsShadow = Loadable(lazy(() => import('views/utilities/Shadow')));
+const UtilsUsers = Loadable(lazy(() => import('views/utilities/Users')));
 
 // sample page routing
 const SamplePage = Loadable(lazy(() => import('views/sample-page')));
@@ -48,8 +48,8 @@ const MainRoutes = {
       element: <UtilsColor />
     },
     {
-      path: 'shadow',
-      element: <UtilsShadow />
+      path: 'User',
+      element: <UtilsUsers />
     },
     {
       path: '/sample-page',

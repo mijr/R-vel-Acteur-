@@ -14,7 +14,13 @@ module.exports = {
       if (!user) throw new Error('Unauthorized');
       return await User.findByPk(user.id);
     },
+    users: async (_, __, { user }) => {
+      if (!user) throw new Error('Unauthorized');
+      if (user.role !== 'admin') throw new Error('Access denied, admin only');
+      return await User.findAll();
+    }
   },
+
   Mutation: {
     signup: async (_, { email, password, firstName, lastName }) => {
       const hashed = await bcrypt.hash(password, 10);

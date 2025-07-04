@@ -15,8 +15,9 @@ module.exports = gql`
   }
 
   type Query {
-    me: User
-  }
+  me: User
+  users: [User!]!
+}
 
   type Mutation {
     signup(email: String!, password: String!, firstName: String!, lastName: String!): AuthPayload

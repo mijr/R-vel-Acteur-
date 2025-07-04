@@ -87,10 +87,7 @@ const Navbar = ({ navItems }) => {
 
           {/* Floating Cal.com Button is initialized globally; here we just trigger it */}
           <motion.button
-            onClick={async () => {
-              const cal = await getCalApi({ namespace: CAL_NAMESPACE });
-              cal('open', { calLink: CAL_LINK });
-            }}
+             onClick={handleLogin}
             style={{
               background: 'transparent',
               border: '1px solid #38bdf8',

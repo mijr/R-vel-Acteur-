@@ -4,6 +4,7 @@ import {
   IconCalendarPlus,
   IconPalette,
   IconShadow,
+  IconUsers,
   IconWindmill
 } from '@tabler/icons-react';
 
@@ -48,11 +49,11 @@ const utilities = {
       breadcrumbs: false
     },
     {
-      id: 'util-shadow',
-      title: 'Shadow',
+      id: 'util-users',
+      title: 'Utilisateur',
       type: 'item',
-      url: '/shadow',
-      icon: icons.IconShadow,
+      url: '/User',
+      icon: icons.IconUsers,
       breadcrumbs: false
     }
   ]
