@@ -8,6 +8,8 @@ const { mergeTypeDefs, mergeResolvers } = require('@graphql-tools/merge');
 
 // GraphQL & DB
 const schema = require('./graphql/schema');
+const newsSchema = require('./graphql/newsSchema');
+const newsResolver = require('./graphql/resolvers/newsResolver');
 const appointment = require('./graphql/appointment');
 const authResolvers = require('./graphql/resolvers/authResolvers');
 const appointmentResolvers = require('./graphql/resolvers/appointmentResolvers');
@@ -143,8 +145,9 @@ app.post('/api/book-event', async (req, res) => {
 });
 
 // ─── Apollo & DB Setup ──────────────────────────────────────────────────────
-const typeDefs = mergeTypeDefs([schema, appointment]);
-const resolvers = mergeResolvers([authResolvers, appointmentResolvers]);
+const typeDefs = mergeTypeDefs([schema, appointment, newsSchema]);
+const resolvers = mergeResolvers([authResolvers, appointmentResolvers, newsResolver]);
+
 
 const startServer = async () => {
   const calApiKey = process.env.CAL_API_KEY;

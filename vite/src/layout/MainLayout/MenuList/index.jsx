@@ -1,4 +1,6 @@
-import { memo, useState } from 'react';
+import { memo, useState, useMemo } from 'react';
+import { useQuery } from '@apollo/client';
+import { GET_ME } from '../../../graphql/queries';
 import Divider from '@mui/material/Divider';
 import List from '@mui/material/List';
 import Typography from '@mui/material/Typography';
@@ -11,54 +13,53 @@ import menuItems from 'menu-items';
 
 import { useGetMenuMaster } from 'api/menu';
 
-// ==============================|| SIDEBAR MENU LIST ||============================== //
-
 function MenuList() {
   const { menuMaster } = useGetMenuMaster();
   const drawerOpen = menuMaster.isDashboardDrawerOpened;
-
   const [selectedID, setSelectedID] = useState('');
 
-  const lastItem = null;
+  const { data, loading, error } = useQuery(GET_ME);
 
-  let lastItemIndex = menuItems.items.length - 1;
-  let remItems = [];
-  let lastItemId;
+  // Toujours appeler les hooks avant les returns
+  const role = data?.me?.role || null;
+  console.log('Role:', role); 
 
-  if (lastItem && lastItem < menuItems.items.length) {
-    lastItemId = menuItems.items[lastItem - 1].id;
-    lastItemIndex = lastItem - 1;
-    remItems = menuItems.items.slice(lastItem - 1, menuItems.items.length).map((item) => ({
-      title: item.title,
-      elements: item.children,
-      icon: item.icon,
-      ...(item.url && {
-        url: item.url
-      })
-    }));
-  }
+  const filteredItems = useMemo(() => {
+    if (role === 'admin') return menuItems.items;
 
-  const navItems = menuItems.items.slice(0, lastItemIndex + 1).map((item, index) => {
+    if (role === 'user') {
+      const utilitiesGroup = menuItems.items.find((group) => group.id === 'utilities');
+      const bookEventItem = utilitiesGroup?.children?.find((i) => i.id === 'book-event');
+
+      if (bookEventItem) {
+        return [
+          {
+            ...utilitiesGroup,
+            children: [bookEventItem]
+          }
+        ];
+      }
+    }
+
+    return [];
+  }, [role]);
+
+  if (loading) return null;
+  if (error || !data?.me) return (
+    <Typography variant="h6" color="error" align="center">
+      Erreur de chargement du menu
+    </Typography>
+  );
+
+  const navItems = filteredItems.map((item, index) => {
     switch (item.type) {
       case 'group':
-        if (item.url && item.id !== lastItemId) {
-          return (
-            <List key={item.id}>
-              <NavItem item={item} level={1} isParents setSelectedID={() => setSelectedID('')} />
-              {index !== 0 && <Divider sx={{ py: 0.5 }} />}
-            </List>
-          );
-        }
-
         return (
           <NavGroup
             key={item.id}
             setSelectedID={setSelectedID}
             selectedID={selectedID}
             item={item}
-            lastItem={lastItem}
-            remItems={remItems}
-            lastItemId={lastItemId}
           />
         );
       default:

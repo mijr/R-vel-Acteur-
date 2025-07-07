@@ -17,7 +17,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
-
+import { useApolloClient } from '@apollo/client';
 import User1 from 'assets/images/users/user-round.svg'; // fallback avatar
 import { IconLogout, IconSettings } from '@tabler/icons-react';
 
@@ -31,6 +31,7 @@ export default function ProfileSection() {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
   const anchorRef = useRef(null);
+   const client = useApolloClient();
 
   // Fetch current user data
   const { data, loading, error } = useQuery(GET_ME);
@@ -46,7 +47,13 @@ export default function ProfileSection() {
     }
     setOpen(false);
   };
-
+   
+   const handleLogout = () => {
+    localStorage.removeItem('token');
+    client.clearStore();  // Vide le cache Apollo (optionnel mais recommandé)
+    navigate('/');
+  };
+  
   useEffect(() => {
     if (open === false && anchorRef.current) {
       anchorRef.current.focus();
@@ -160,10 +167,7 @@ export default function ProfileSection() {
                         </ListItemButton>
                         <ListItemButton
                           sx={{ borderRadius: `${borderRadius}px` }}
-                          onClick={() => {
-                            localStorage.removeItem('token');
-                            navigate('/');
-                          }}
+                          onClick={handleLogout}
                         >
                           <ListItemIcon>
                             <IconLogout stroke={1.5} size="20px" />

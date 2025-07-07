@@ -1,36 +1,245 @@
-import { useQuery } from '@apollo/client';
-import { GET_ME } from 'graphql/queries';
+import { useQuery, useMutation, gql } from '@apollo/client';
+import { useState } from 'react';
+import {
+  Box,
+  CircularProgress,
+  Typography,
+  Grid,
+  Card,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  MenuItem,
+  IconButton,
+  Tooltip
+} from '@mui/material';
 
 import MainCard from 'ui-component/cards/MainCard';
-import SubCard from 'ui-component/cards/SubCard';
-import { Box, CircularProgress, Typography, Grid, Card } from '@mui/material';
+import { IconEdit, IconTrash } from '@tabler/icons-react';
 
-export default function UserProfileCard() {
-  const { data, loading, error } = useQuery(GET_ME);
+const GET_USERS = gql`
+  query GetUsers {
+    users {
+      id
+      email
+      firstName
+      lastName
+      role
+    }
+  }
+`;
+
+const UPDATE_USER = gql`
+  mutation UpdateUser($id: ID!, $input: UpdateUserInput!) {
+    updateUser(id: $id, input: $input) {
+      id
+      email
+      firstName
+      lastName
+      role
+    }
+  }
+`;
+
+const DELETE_USER = gql`
+  mutation DeleteUser($id: ID!) {
+    deleteUser(id: $id)
+  }
+`;
+
+const roles = ['admin', 'user'];
+
+export default function UserProfileCard({ isAdmin }) {
+  const { data, loading, error, refetch } = useQuery(GET_USERS);
+  const [updateUser] = useMutation(UPDATE_USER);
+  const [deleteUser] = useMutation(DELETE_USER);
+
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [form, setForm] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    role: ''
+  });
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
 
   if (loading) return <CircularProgress />;
   if (error) return <Typography color="error">Erreur : {error.message}</Typography>;
 
-  const user = data.me;
+  const users = data.users;
+
+  const openModal = (user) => {
+    setSelectedUser(user);
+    setForm({
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      role: user.role
+    });
+    setModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setSelectedUser(null);
+    setModalOpen(false);
+  };
+
+  const handleChange = (e) => {
+    setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const handleSave = async () => {
+    try {
+      await updateUser({
+        variables: {
+          id: selectedUser.id,
+          input: { ...form }
+        }
+      });
+      await refetch();
+      closeModal();
+    } catch (err) {
+      alert('Erreur lors de la mise à jour: ' + err.message);
+    }
+  };
+
+  const confirmDelete = (userId) => {
+    setDeleteConfirm(userId);
+  };
+
+  const cancelDelete = () => {
+    setDeleteConfirm(null);
+  };
+
+  const handleDelete = async () => {
+    try {
+      await deleteUser({ variables: { id: deleteConfirm } });
+      await refetch();
+      setDeleteConfirm(null);
+    } catch (err) {
+      alert('Erreur lors de la suppression: ' + err.message);
+    }
+  };
 
   return (
-    <MainCard title="Mon Profil Utilisateur">
-      <Card sx={{ boxShadow: 4, p: 3, mb: 2 }}>
-        <Grid container spacing={2}>
-          <Grid item xs={12} sm={6}>
-            <Typography variant="subtitle2">Nom</Typography>
-            <Typography variant="body1">{user.firstName} {user.lastName}</Typography>
+    <MainCard title="Liste des Utilisateurs">
+      {users.map((user) => (
+        <Card key={user.id} sx={{ boxShadow: 2, p: 3, mb: 2, borderRadius: 2 }}>
+          <Grid container spacing={2} alignItems="center">
+            <Grid item xs={12} sm={3}>
+              <Typography variant="subtitle2" color="textSecondary">Nom</Typography>
+              <Typography variant="body1" fontWeight={600}>
+                {user.firstName} {user.lastName}
+              </Typography>
+            </Grid>
+            <Grid item xs={12} sm={3}>
+              <Typography variant="subtitle2" color="textSecondary">Email</Typography>
+              <Typography variant="body1">{user.email}</Typography>
+            </Grid>
+            <Grid item xs={12} sm={2}>
+              <Typography variant="subtitle2" color="textSecondary">Rôle</Typography>
+              <Typography variant="body1" sx={{ textTransform: 'capitalize' }}>{user.role}</Typography>
+            </Grid>
+
+            {isAdmin && (
+              <Grid item xs={12} sm={4} sx={{ textAlign: 'right' }}>
+                <Tooltip title="Modifier">
+                  <IconButton
+                    color="primary"
+                    onClick={() => openModal(user)}
+                    aria-label={`Modifier ${user.firstName}`}
+                  >
+                    <IconEdit size={20} />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip title="Supprimer">
+                  <IconButton
+                    color="error"
+                    onClick={() => confirmDelete(user.id)}
+                    aria-label={`Supprimer ${user.firstName}`}
+                  >
+                    <IconTrash size={20} />
+                  </IconButton>
+                </Tooltip>
+              </Grid>
+            )}
           </Grid>
-          <Grid item xs={12} sm={6}>
-            <Typography variant="subtitle2">Email</Typography>
-            <Typography variant="body1">{user.email}</Typography>
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <Typography variant="subtitle2">Rôle</Typography>
-            <Typography variant="body1">{user.role}</Typography>
-          </Grid>
-        </Grid>
-      </Card>
+        </Card>
+      ))}
+
+      {/* Modal Modification */}
+      <Dialog open={modalOpen} onClose={closeModal} maxWidth="sm" fullWidth>
+        <DialogTitle>Modifier l'utilisateur</DialogTitle>
+        <DialogContent dividers>
+          <TextField
+            margin="dense"
+            label="Prénom"
+            name="firstName"
+            fullWidth
+            value={form.firstName}
+            onChange={handleChange}
+            autoFocus
+          />
+          <TextField
+            margin="dense"
+            label="Nom"
+            name="lastName"
+            fullWidth
+            value={form.lastName}
+            onChange={handleChange}
+          />
+          <TextField
+            margin="dense"
+            label="Email"
+            name="email"
+            type="email"
+            fullWidth
+            value={form.email}
+            onChange={handleChange}
+          />
+          <TextField
+            select
+            margin="dense"
+            label="Rôle"
+            name="role"
+            fullWidth
+            value={form.role}
+            onChange={handleChange}
+          >
+            {roles.map((r) => (
+              <MenuItem key={r} value={r}>
+                {r.charAt(0).toUpperCase() + r.slice(1)}
+              </MenuItem>
+            ))}
+          </TextField>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={closeModal}>Annuler</Button>
+          <Button variant="contained" onClick={handleSave} color="primary">
+            Enregistrer
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Confirmation suppression */}
+      <Dialog open={Boolean(deleteConfirm)} onClose={cancelDelete}>
+        <DialogTitle>Confirmer la suppression</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Êtes-vous sûr de vouloir supprimer cet utilisateur ?
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={cancelDelete}>Annuler</Button>
+          <Button color="error" variant="contained" onClick={handleDelete}>
+            Supprimer
+          </Button>
+        </DialogActions>
+      </Dialog>
     </MainCard>
   );
 }

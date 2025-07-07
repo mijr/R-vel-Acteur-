@@ -12,7 +12,7 @@ const AppointmentList = Loadable(lazy(() => import('views/utilities/AppointmentL
 const BookEvent = Loadable(lazy(() => import('views/utilities/BookEvent')));
 const UtilsColor = Loadable(lazy(() => import('views/utilities/Color')));
 const UtilsUsers = Loadable(lazy(() => import('views/utilities/Users')));
-
+const UtilsNews = Loadable(lazy(()=>   import('views/utilities/News')));
 // sample page routing
 const SamplePage = Loadable(lazy(() => import('views/sample-page')));
 
@@ -42,6 +42,10 @@ const MainRoutes = {
     {
      path: 'BookEvent',
       element: <BookEvent />  
+    },
+    {
+     path: 'New',
+      element: <UtilsNews />  
     },
     {
       path: 'color',

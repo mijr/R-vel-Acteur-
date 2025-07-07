@@ -5,8 +5,10 @@ import {
   IconPalette,
   IconShadow,
   IconUsers,
-  IconWindmill
+  IconWindmill,
+  IconNews 
 } from '@tabler/icons-react';
+
 
 // constant
 const icons = {
@@ -14,8 +16,11 @@ const icons = {
   IconCalendarPlus,
   IconPalette,
   IconShadow,
-  IconWindmill
+  IconNews, // ← ce champ doit être présent 
+  IconWindmill,
+  IconUsers // ← ce champ doit être présent
 };
+
 
 // ==============================|| UTILITIES MENU ITEMS ||============================== //
 
@@ -49,6 +54,14 @@ const utilities = {
       breadcrumbs: false
     },
     {
+      id: 'util-news',
+      title: 'Actualités',
+      type: 'item',
+      url: '/new',
+      icon: icons.IconNews,
+      breadcrumbs: false
+    },
+    {
       id: 'util-users',
       title: 'Utilisateur',
       type: 'item',
@@ -56,6 +69,7 @@ const utilities = {
       icon: icons.IconUsers,
       breadcrumbs: false
     }
+
   ]
 };
 

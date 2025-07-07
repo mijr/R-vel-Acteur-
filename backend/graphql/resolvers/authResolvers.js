@@ -60,5 +60,27 @@ module.exports = {
       await user.save();
       return "Password has been reset successfully.";
     },
+
+    updateUser: async (_, { id, input }, { user }) => {
+      if (!user) throw new Error('Unauthorized');
+      if (user.role !== 'admin') throw new Error('Access denied, admin only');
+
+      const userToUpdate = await User.findByPk(id);
+      if (!userToUpdate) throw new Error('User not found');
+
+      await userToUpdate.update(input);
+      return userToUpdate;
+    },
+
+    deleteUser: async (_, { id }, { user }) => {
+      if (!user) throw new Error('Unauthorized');
+      if (user.role !== 'admin') throw new Error('Access denied, admin only');
+
+      const userToDelete = await User.findByPk(id);
+      if (!userToDelete) throw new Error('User not found');
+
+      await userToDelete.destroy();
+      return true;
+    },
   },
 };

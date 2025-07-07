@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 
-// material-ui
+// material-ui imports
 import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import Avatar from '@mui/material/Avatar';
@@ -21,32 +21,19 @@ import Box from '@mui/material/Box';
 // project imports
 import MainCard from 'ui-component/cards/MainCard';
 import Transitions from 'ui-component/extended/Transitions';
-import NotificationList from './NotificationList';
+import NotificationList from './NotificationList'; // Make sure it accepts notifications & onMarkAsRead props
 
-// assets
 import { IconBell } from '@tabler/icons-react';
 
-// notification status options
 const status = [
-  {
-    value: 'all',
-    label: 'All Notification'
-  },
-  {
-    value: 'new',
-    label: 'New'
-  },
-  {
-    value: 'unread',
-    label: 'Unread'
-  },
-  {
-    value: 'other',
-    label: 'Other'
-  }
+  { value: 'all', label: 'All Notification' },
+  { value: 'new', label: 'New' },
+  { value: 'unread', label: 'Unread' },
+  { value: 'other', label: 'Other' }
 ];
 
-// ==============================|| NOTIFICATION ||============================== //
+const CAL_API_URL = 'https://api.cal.com/v1/attendees?apiKey=cal_live_8aee1aa2c48670ea92d8fe14fcb4d077';
+const FETCH_INTERVAL_MS = 60000; // 1 minute
 
 export default function NotificationSection() {
   const theme = useTheme();
@@ -54,10 +41,8 @@ export default function NotificationSection() {
 
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState('');
+  const [notifications, setNotifications] = useState([]); // Notifications array
 
-  /**
-   * anchorRef is used on different componets and specifying one type leads to other components throwing an error
-   * */
   const anchorRef = useRef(null);
 
   const handleToggle = () => {
@@ -80,12 +65,51 @@ export default function NotificationSection() {
   }, [open]);
 
   const handleChange = (event) => {
-    event?.target.value && setValue(event?.target.value);
+    setValue(event?.target.value || '');
   };
+
+  // Fetch attendees and add new as notifications
+  const fetchAttendees = async () => {
+    try {
+      const response = await fetch(CAL_API_URL, { method: 'GET' });
+      const data = await response.json();
+      if (!data.attendees) return;
+
+      const knownIds = notifications.map((n) => n.id);
+      const newAttendees = data.attendees.filter((att) => !knownIds.includes(att.id));
+
+      if (newAttendees.length > 0) {
+        const newNotifications = newAttendees.map((att) => ({
+          id: att.id,
+          title: `Nouvel inscrit : ${att.name}`,
+          description: `Email: ${att.email}`,
+          time: new Date().toLocaleString(),
+          read: false
+        }));
+        setNotifications((prev) => [...newNotifications, ...prev]);
+      }
+    } catch (err) {
+      console.error('Erreur fetch attendees:', err);
+    }
+  };
+
+  useEffect(() => {
+    fetchAttendees(); // initial fetch
+    const intervalId = setInterval(fetchAttendees, FETCH_INTERVAL_MS);
+    return () => clearInterval(intervalId);
+  }, []);
+
+  const markAsRead = (id) => {
+    setNotifications((prev) =>
+      prev.map((notif) => (notif.id === id ? { ...notif, read: true } : notif))
+    );
+  };
+
+  const unreadCount = notifications.filter((n) => !n.read).length;
 
   return (
     <>
-      <Box sx={{ ml: 2 }}>
+      <Box sx={{ ml: 2, position: 'relative', display: 'inline-flex' }}>
         <Avatar
           variant="rounded"
           sx={{
@@ -107,7 +131,26 @@ export default function NotificationSection() {
         >
           <IconBell stroke={1.5} size="20px" />
         </Avatar>
+        {unreadCount > 0 && (
+          <Chip
+            label={unreadCount}
+            size="small"
+            color="warning"
+            sx={{
+              position: 'absolute',
+              top: 2,
+              right: 2,
+              minWidth: '20px',
+              height: '20px',
+              borderRadius: '10px',
+              fontSize: '0.75rem',
+              fontWeight: 'bold',
+              pointerEvents: 'none'
+            }}
+          />
+        )}
       </Box>
+
       <Popper
         placement={downMD ? 'bottom' : 'bottom-end'}
         open={open}
@@ -131,54 +174,43 @@ export default function NotificationSection() {
                 {open && (
                   <MainCard border={false} elevation={16} content={false} boxShadow shadow={theme.shadows[16]}>
                     <Grid container direction="column" spacing={2}>
-                      <Grid size={12}>
+                      <Grid item xs={12}>
                         <Grid container sx={{ alignItems: 'center', justifyContent: 'space-between', pt: 2, px: 2 }}>
                           <Grid>
                             <Stack direction="row" spacing={2}>
-                              <Typography variant="subtitle1">All Notification</Typography>
-                              <Chip size="small" label="01" sx={{ color: 'background.default', bgcolor: 'warning.dark' }} />
+                              <Typography variant="subtitle1">Notifications</Typography>
+                              <Chip
+                                size="small"
+                                label={unreadCount.toString()}
+                                sx={{ color: 'background.default', bgcolor: 'warning.dark' }}
+                              />
                             </Stack>
                           </Grid>
                           <Grid>
-                            <Typography component={Link} to="#" variant="subtitle2" color="primary">
-                              Mark as all read
+                            <Typography
+                              component={Link}
+                              to="#"
+                              variant="subtitle2"
+                              color="primary"
+                              onClick={() => setNotifications((prev) => prev.map((n) => ({ ...n, read: true })))}
+                              sx={{ cursor: 'pointer' }}
+                            >
+                              Mark all as read
                             </Typography>
                           </Grid>
                         </Grid>
                       </Grid>
-                      <Grid size={12}>
+                      <Grid item xs={12}>
                         <Box
                           sx={{
                             height: '100%',
                             maxHeight: 'calc(100vh - 205px)',
+                            overflowY: 'auto',
                             overflowX: 'hidden',
                             '&::-webkit-scrollbar': { width: 5 }
                           }}
                         >
-                          <Grid container direction="column" spacing={2}>
-                            <Grid size={12}>
-                              <Box sx={{ px: 2, pt: 0.25 }}>
-                                <TextField
-                                  id="outlined-select-currency-native"
-                                  select
-                                  fullWidth
-                                  value={value}
-                                  onChange={handleChange}
-                                  slotProps={{ select: { native: true } }}
-                                >
-                                  {status.map((option) => (
-                                    <option key={option.value} value={option.value}>
-                                      {option.label}
-                                    </option>
-                                  ))}
-                                </TextField>
-                              </Box>
-                            </Grid>
-                            <Grid size={12} sx={{ p: 0 }}>
-                              <Divider sx={{ my: 0 }} />
-                            </Grid>
-                          </Grid>
-                          <NotificationList />
+                          <NotificationList notifications={notifications} onMarkAsRead={markAsRead} />
                         </Box>
                       </Grid>
                     </Grid>

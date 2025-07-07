@@ -10,6 +10,7 @@ import InputAdornment from '@mui/material/InputAdornment';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import Popper from '@mui/material/Popper';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 
 // third party
 import PopupState, { bindPopper, bindToggle } from 'material-ui-popup-state';
@@ -17,8 +18,11 @@ import PopupState, { bindPopper, bindToggle } from 'material-ui-popup-state';
 // project imports
 import Transitions from 'ui-component/extended/Transitions';
 
-// assets
+// icons
 import { IconAdjustmentsHorizontal, IconSearch, IconX } from '@tabler/icons-react';
+
+// react-router navigation
+import { useNavigate } from 'react-router-dom';
 
 function HeaderAvatarComponent({ children, ref, ...others }) {
   const theme = useTheme();
@@ -50,47 +54,61 @@ const HeaderAvatar = HeaderAvatarComponent;
 
 function MobileSearch({ value, setValue, popupState }) {
   const theme = useTheme();
+  const navigate = useNavigate();
 
   return (
-    <OutlinedInput
-      id="input-search-header"
-      value={value}
-      onChange={(e) => setValue(e.target.value)}
-      placeholder="Search"
-      startAdornment={
-        <InputAdornment position="start">
-          <IconSearch stroke={1.5} size="16px" />
-        </InputAdornment>
-      }
-      endAdornment={
-        <InputAdornment position="end">
-          <HeaderAvatar>
-            <IconAdjustmentsHorizontal stroke={1.5} size="20px" />
-          </HeaderAvatar>
-          <Box sx={{ ml: 2 }}>
-            <Avatar
-              variant="rounded"
-              sx={{
-                ...theme.typography.commonAvatar,
-                ...theme.typography.mediumAvatar,
-                bgcolor: 'orange.light',
-                color: 'orange.dark',
-                '&:hover': {
-                  bgcolor: 'orange.dark',
-                  color: 'orange.light'
-                }
-              }}
-              {...bindToggle(popupState)}
-            >
-              <IconX stroke={1.5} size="20px" />
-            </Avatar>
-          </Box>
-        </InputAdornment>
-      }
-      aria-describedby="search-helper-text"
-      slotProps={{ input: { 'aria-label': 'weight', sx: { bgcolor: 'transparent', pl: 0.5 } } }}
-      sx={{ width: '100%', ml: 0.5, px: 2, bgcolor: 'background.paper' }}
-    />
+    <>
+      <OutlinedInput
+        id="input-search-header"
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        placeholder="Search"
+        startAdornment={
+          <InputAdornment position="start">
+            <IconSearch stroke={1.5} size="16px" />
+          </InputAdornment>
+        }
+        endAdornment={
+          <InputAdornment position="end">
+            <HeaderAvatar>
+              <IconAdjustmentsHorizontal stroke={1.5} size="20px" />
+            </HeaderAvatar>
+            <Box sx={{ ml: 2 }}>
+              <Avatar
+                variant="rounded"
+                sx={{
+                  ...theme.typography.commonAvatar,
+                  ...theme.typography.mediumAvatar,
+                  bgcolor: 'orange.light',
+                  color: 'orange.dark',
+                  '&:hover': {
+                    bgcolor: 'orange.dark',
+                    color: 'orange.light'
+                  }
+                }}
+                {...bindToggle(popupState)}
+              >
+                <IconX stroke={1.5} size="20px" />
+              </Avatar>
+            </Box>
+          </InputAdornment>
+        }
+        aria-describedby="search-helper-text"
+        slotProps={{ input: { 'aria-label': 'weight', sx: { bgcolor: 'transparent', pl: 0.5 } } }}
+        sx={{ width: '100%', ml: 0.5, px: 2, bgcolor: 'background.paper' }}
+      />
+      {/* Button to navigate to LandingPage */}
+      <Box sx={{ mt: 1 }}>
+        <Button
+          variant="contained"
+          color="primary"
+          fullWidth
+          onClick={() => navigate('/landing')}
+        >
+          Aller à la page d'accueil
+        </Button>
+      </Box>
+    </>
   );
 }
 
@@ -98,6 +116,7 @@ function MobileSearch({ value, setValue, popupState }) {
 
 export default function SearchSection() {
   const [value, setValue] = useState('');
+  const navigate = useNavigate();
 
   return (
     <>
@@ -135,6 +154,7 @@ export default function SearchSection() {
           )}
         </PopupState>
       </Box>
+
       <Box sx={{ display: { xs: 'none', md: 'block' } }}>
         <OutlinedInput
           id="input-search-header"
@@ -157,6 +177,16 @@ export default function SearchSection() {
           slotProps={{ input: { 'aria-label': 'weight', sx: { bgcolor: 'transparent', pl: 0.5 } } }}
           sx={{ width: { md: 250, lg: 434 }, ml: 2, px: 2 }}
         />
+        {/* Button to navigate to LandingPage on desktop */}
+        <Box sx={{ mt: 1 }}>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => navigate('/')}
+          >
+            Aller à la page d'accueil
+          </Button>
+        </Box>
       </Box>
     </>
   );

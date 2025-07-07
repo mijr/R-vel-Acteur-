@@ -72,7 +72,7 @@ const Footer = () => {
               <a href="tel:+123456789" style={{ color: '#94a3b8', textDecoration: 'none' }}>
                 +1 234 567 89
               </a>
-              <a href="/appointment" style={{ color: '#38bdf8', textDecoration: 'none' }}>
+              <a href="/pages/login" style={{ color: '#38bdf8', textDecoration: 'none' }}>
                 Prendre rendez-vous
               </a>
             </div>

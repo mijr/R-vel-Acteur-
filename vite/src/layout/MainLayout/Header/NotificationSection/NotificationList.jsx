@@ -1,6 +1,6 @@
+import React from 'react';
 import PropTypes from 'prop-types';
 
-// material-ui
 import { alpha, useTheme } from '@mui/material/styles';
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
@@ -14,22 +14,22 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 
-// assets
-import { IconBrandTelegram, IconBuildingStore, IconMailbox, IconPhoto } from '@tabler/icons-react';
-import User1 from 'assets/images/users/user-round.svg';
+import { IconPhoto } from '@tabler/icons-react'; // example icon for all notifications
 
-function ListItemWrapper({ children }) {
+function ListItemWrapper({ children, onClick, read }) {
   const theme = useTheme();
 
   return (
     <Box
+      onClick={onClick}
       sx={{
         p: 2,
         borderBottom: '1px solid',
         borderColor: 'divider',
         cursor: 'pointer',
+        bgcolor: read ? 'background.paper' : alpha(theme.palette.primary.main, 0.15),
         '&:hover': {
-          bgcolor: alpha(theme.palette.grey[200], 0.3)
+          bgcolor: alpha(theme.palette.primary.main, 0.25)
         }
       }}
     >
@@ -38,144 +38,59 @@ function ListItemWrapper({ children }) {
   );
 }
 
-// ==============================|| NOTIFICATION LIST ITEM ||============================== //
-
-export default function NotificationList() {
-  const containerSX = { pl: 7 };
-
+export default function NotificationList({ notifications, onMarkAsRead }) {
   return (
     <List sx={{ width: '100%', maxWidth: { xs: 300, md: 330 }, py: 0 }}>
-      <ListItemWrapper>
-        <ListItem
-          alignItems="center"
-          disablePadding
-          secondaryAction={
-            <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'flex-end' }}>
-              <Typography variant="caption">2 min ago</Typography>
-            </Stack>
-          }
+      {notifications.length === 0 && (
+        <Typography sx={{ p: 2 }} variant="body2" align="center" color="text.secondary">
+          Aucune notification
+        </Typography>
+      )}
+      {notifications.map((notif) => (
+        <ListItemWrapper
+          key={notif.id}
+          onClick={() => onMarkAsRead(notif.id)}
+          read={notif.read}
         >
-          <ListItemAvatar>
-            <Avatar alt="John Doe" src={User1} />
-          </ListItemAvatar>
-          <ListItemText primary="John Doe" />
-        </ListItem>
-        <Stack spacing={2} sx={containerSX}>
-          <Typography variant="subtitle2">It is a long established fact that a reader will be distracted</Typography>
-          <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
-            <Chip label="Unread" color="error" size="small" sx={{ width: 'min-content' }} />
-            <Chip label="New" color="warning" size="small" sx={{ width: 'min-content' }} />
-          </Stack>
-        </Stack>
-      </ListItemWrapper>
-      <ListItemWrapper>
-        <ListItem
-          alignItems="center"
-          disablePadding
-          secondaryAction={
-            <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'flex-end' }}>
-              <Typography variant="caption">2 min ago</Typography>
-            </Stack>
-          }
-        >
-          <ListItemAvatar>
-            <Avatar
-              sx={{
-                color: 'success.dark',
-                bgcolor: 'success.light'
-              }}
-            >
-              <IconBuildingStore stroke={1.5} size="20px" />
-            </Avatar>
-          </ListItemAvatar>
-          <ListItemText primary={<Typography variant="subtitle1">Store Verification Done</Typography>} />
-        </ListItem>
-        <Stack spacing={2} sx={containerSX}>
-          <Typography variant="subtitle2">We have successfully received your request.</Typography>
-          <Chip label="Unread" color="error" size="small" sx={{ width: 'min-content' }} />
-        </Stack>
-      </ListItemWrapper>
-      <ListItemWrapper>
-        <ListItem
-          alignItems="center"
-          disablePadding
-          secondaryAction={
-            <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'flex-end' }}>
-              <Typography variant="caption">2 min ago</Typography>
-            </Stack>
-          }
-        >
-          <ListItemAvatar>
-            <Avatar
-              sx={{
-                color: 'primary.dark',
-                bgcolor: 'primary.light'
-              }}
-            >
-              <IconMailbox stroke={1.5} size="20px" />
-            </Avatar>
-          </ListItemAvatar>
-          <ListItemText primary={<Typography variant="subtitle1">Check Your Mail.</Typography>} />
-        </ListItem>
-        <Stack spacing={2} sx={containerSX}>
-          <Typography variant="subtitle2">All done! Now check your inbox as you&apos;re in for a sweet treat!</Typography>
-          <Button variant="contained" endIcon={<IconBrandTelegram stroke={1.5} size={20} />} sx={{ width: 'min-content' }}>
-            Mail
-          </Button>
-        </Stack>
-      </ListItemWrapper>
-      <ListItemWrapper>
-        <ListItem
-          alignItems="center"
-          disablePadding
-          secondaryAction={
-            <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'flex-end' }}>
-              <Typography variant="caption">2 min ago</Typography>
-            </Stack>
-          }
-        >
-          <ListItemAvatar>
-            <Avatar alt="John Doe" src={User1} />
-          </ListItemAvatar>
-          <ListItemText primary={<Typography variant="subtitle1">John Doe</Typography>} />
-        </ListItem>
-        <Stack spacing={2} sx={containerSX}>
-          <Typography component="span" variant="subtitle2">
-            Uploaded two file on &nbsp;
-            <Typography component="span" variant="h6">
-              21 Jan 2020
-            </Typography>
-          </Typography>
-          <Card sx={{ bgcolor: 'secondary.light' }}>
-            <Stack direction="row" spacing={2} sx={{ p: 2.5 }}>
-              <IconPhoto stroke={1.5} size="20px" />
-              <Typography variant="subtitle1">demo.jpg</Typography>
-            </Stack>
-          </Card>
-        </Stack>
-      </ListItemWrapper>
-      <ListItemWrapper>
-        <ListItem
-          alignItems="center"
-          disablePadding
-          secondaryAction={
-            <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'flex-end' }}>
-              <Typography variant="caption">2 min ago</Typography>
-            </Stack>
-          }
-        >
-          <ListItemAvatar>
-            <Avatar alt="John Doe" src={User1} />
-          </ListItemAvatar>
-          <ListItemText primary={<Typography variant="subtitle1">John Doe</Typography>} />
-        </ListItem>
-        <Stack spacing={2} sx={containerSX}>
-          <Typography variant="subtitle2">It is a long established fact that a reader will be distracted</Typography>
-          <Chip label="Confirmation of Account." color="success" size="small" sx={{ width: 'min-content' }} />
-        </Stack>
-      </ListItemWrapper>
+          <ListItem alignItems="center" disablePadding>
+            <ListItemAvatar>
+              <Avatar sx={{ bgcolor: notif.read ? 'grey.400' : 'primary.main', color: 'white' }}>
+                <IconPhoto stroke={1.5} size="20px" />
+              </Avatar>
+            </ListItemAvatar>
+            <ListItemText
+              primary={
+                <Typography
+                  variant="subtitle1"
+                  sx={{ fontWeight: notif.read ? 'normal' : '700' }}
+                >
+                  {notif.title}
+                </Typography>
+              }
+              secondary={
+                <>
+                  <Typography
+                    variant="body2"
+                    sx={{ color: 'text.secondary' }}
+                    noWrap
+                  >
+                    {notif.description}
+                  </Typography>
+                  <Typography variant="caption" color="text.disabled">
+                    {notif.time}
+                  </Typography>
+                </>
+              }
+            />
+            {!notif.read && <Chip label="New" color="warning" size="small" sx={{ ml: 1 }} />}
+          </ListItem>
+        </ListItemWrapper>
+      ))}
     </List>
   );
 }
 
-ListItemWrapper.propTypes = { children: PropTypes.node };
+NotificationList.propTypes = {
+  notifications: PropTypes.array.isRequired,
+  onMarkAsRead: PropTypes.func.isRequired
+};
