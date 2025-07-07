@@ -32,7 +32,10 @@ module.exports = gql`
     requestPasswordReset(email: String!): String
     resetPassword(token: String!, newPassword: String!): String
 
+
+
     updateUser(id: ID!, input: UpdateUserInput!): User
     deleteUser(id: ID!): Boolean
+   changePassword(currentPassword: String!, newPassword: String!): String
   }
 `;

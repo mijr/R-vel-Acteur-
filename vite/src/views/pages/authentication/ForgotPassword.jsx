@@ -52,8 +52,11 @@ export default function ForgotPassword() {
         })
       });
 
-      const result = await response.json();
-      if (result.data?.requestPasswordReset) {
+     const result = await response.json();
+
+      if (result.errors && result.errors.length > 0) {
+        setError(result.errors[0].message);
+      } else if (result.data?.requestPasswordReset) {
         setSubmitted(true);
       } else {
         setError('Something went wrong. Please try again.');
@@ -97,7 +100,7 @@ export default function ForgotPassword() {
                   <Grid item xs={12}>
                     {submitted ? (
                       <Alert severity="success">
-                        ✅ If your email exists, a password reset link has been sent. Please check your inbox.
+                        ✅ A reset link has been sent. Please check your inbox {email}.
                       </Alert>
                     ) : (
                       <Stack spacing={2}>

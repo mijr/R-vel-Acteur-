@@ -159,7 +159,11 @@ export default function ProfileSection() {
                           '& .MuiListItemButton-root': { mt: 0.5 },
                         }}
                       >
-                        <ListItemButton sx={{ borderRadius: `${borderRadius}px` }} selected={false}>
+                        <ListItemButton
+                          sx={{ borderRadius: `${borderRadius}px` }}
+                          selected={false}
+                          onClick={() => navigate('/Profile')}
+                        >
                           <ListItemIcon>
                             <IconSettings stroke={1.5} size="20px" />
                           </ListItemIcon>
@@ -172,7 +176,7 @@ export default function ProfileSection() {
                           <ListItemIcon>
                             <IconLogout stroke={1.5} size="20px" />
                           </ListItemIcon>
-                          <ListItemText primary={<Typography variant="body2">Logout</Typography>} />
+                          <ListItemText primary={<Typography variant="body2">Deconexion</Typography>} />
                         </ListItemButton>
                       </List>
                     </Box>

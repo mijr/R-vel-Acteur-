@@ -5,6 +5,7 @@ const crypto = require('crypto');
 const { Op } = require('sequelize');
 require('dotenv').config();
 
+const sendEmail = require('../../utils/sendEmail');
 const generateToken = (user) =>
   jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '7d' });
 
@@ -39,13 +40,32 @@ module.exports = {
     requestPasswordReset: async (_, { email }) => {
       const user = await User.findOne({ where: { email } });
       if (!user) return "If the email exists, a reset link was sent.";
+
       const token = crypto.randomBytes(32).toString('hex');
       user.resetToken = token;
       user.resetTokenExpiry = new Date(Date.now() + 3600000); // 1h
       await user.save();
-      console.log(`🔐 Reset link: http://localhost:3000/reset-password/${token}`);
-      return "Reset link sent if email is valid.";
+
+      const resetLink = `http://localhost:3000/reset-password/${token}`;
+
+      const html = `
+        <p>Bonjour ${user.firstName || ''},</p>
+        <p>Vous avez demandé une réinitialisation de mot de passe.</p>
+        <p>Cliquez sur le lien ci-dessous pour définir un nouveau mot de passe :</p>
+        <a href="${resetLink}" target="_blank">${resetLink}</a>
+        <p>Ce lien expire dans une heure.</p>
+        <p>Si vous n'avez rien demandé, ignorez simplement ce message.</p>
+      `;
+
+      try {
+        await sendEmail(user.email, "Réinitialisation de mot de passe", html);
+        return "Reset link sent to your  email.";
+      } catch (err) {
+        console.error('Erreur lors de l’envoi du mail :', err.message);
+        throw new Error(`Échec de l'envoi de l'email : ${err.message}`);
+      }
     },
+
     resetPassword: async (_, { token, newPassword }) => {
       const user = await User.findOne({
         where: {
@@ -81,6 +101,19 @@ module.exports = {
 
       await userToDelete.destroy();
       return true;
+    },
+    changePassword: async (_, { currentPassword, newPassword }, { user }) => {
+      if (!user) throw new Error('Unauthorized');
+
+      const dbUser = await User.findByPk(user.id);
+      if (!dbUser) throw new Error('Utilisateur introuvable');
+
+      const valid = await bcrypt.compare(currentPassword, dbUser.password);
+      if (!valid) throw new Error('Mot de passe actuel incorrect');
+
+      dbUser.password = await bcrypt.hash(newPassword, 10);
+      await dbUser.save();
+      return "Mot de passe mis à jour avec succès";
     },
   },
 };
