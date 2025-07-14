@@ -21,5 +21,8 @@ module.exports = (sequelize, DataTypes) => {
     },
     resetToken: DataTypes.STRING,
     resetTokenExpiry: DataTypes.DATE,
+    otpCode: DataTypes.STRING,
+    otpExpiry: DataTypes.DATE,
+
   });
 };

@@ -51,7 +51,7 @@ const DELETE_USER = gql`
 `;
 
 const roles = ['admin', 'user'];
-
+  console.log('Roles:', roles);
 export default function UserProfileCard({ isAdmin }) {
   const { data, loading, error, refetch } = useQuery(GET_USERS);
   const [updateUser] = useMutation(UPDATE_USER);
@@ -71,7 +71,7 @@ export default function UserProfileCard({ isAdmin }) {
   if (error) return <Typography color="error">Erreur : {error.message}</Typography>;
 
   const users = data.users;
-
+   
   const openModal = (user) => {
     setSelectedUser(user);
     setForm({
@@ -145,7 +145,7 @@ export default function UserProfileCard({ isAdmin }) {
               <Typography variant="body1" sx={{ textTransform: 'capitalize' }}>{user.role}</Typography>
             </Grid>
 
-            {isAdmin && (
+            
               <Grid item xs={12} sm={4} sx={{ textAlign: 'right' }}>
                 <Tooltip title="Modifier">
                   <IconButton
@@ -166,7 +166,6 @@ export default function UserProfileCard({ isAdmin }) {
                   </IconButton>
                 </Tooltip>
               </Grid>
-            )}
           </Grid>
         </Card>
       ))}

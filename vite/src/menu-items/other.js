@@ -1,8 +1,8 @@
 // assets
-import { IconBrandChrome, IconHelp } from '@tabler/icons-react';
+import { IconBrandChrome, IconHelp, IconMessage } from '@tabler/icons-react';
 
 // constant
-const icons = { IconBrandChrome, IconHelp };
+const icons = { IconBrandChrome, IconHelp, IconMessage };
 
 // ==============================|| SAMPLE PAGE & DOCUMENTATION MENU ITEMS ||============================== //
 
@@ -16,6 +16,14 @@ const other = {
       type: 'item',
       url: '/sample-page',
       icon: icons.IconBrandChrome,
+      breadcrumbs: false
+    },
+    {
+      id: 'comment',
+      title: 'Témoignages',
+      type: 'item',
+      url: '/comment',
+      icon: icons.IconMessage,
       breadcrumbs: false
     },
     {

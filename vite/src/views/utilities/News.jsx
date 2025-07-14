@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, gql } from '@apollo/client';
 import {
   Button,
@@ -10,7 +10,14 @@ import {
   MenuItem,
   CircularProgress,
   Typography,
+  Box,
+  Checkbox,
+  FormControlLabel,
+  IconButton,
+  Stack,
 } from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
 
 const GET_NEWS = gql`
   query NewsList {
@@ -21,6 +28,7 @@ const GET_NEWS = gql`
       description
       type
       image
+      featured
     }
   }
 `;
@@ -34,28 +42,83 @@ const CREATE_NEWS = gql`
       description
       type
       image
+      featured
     }
   }
 `;
 
-const newsTypes = ['Nouveau service', 'Événement', 'Média', 'Formation'];
+const UPDATE_NEWS = gql`
+  mutation UpdateNews($input: UpdateNewsInput!) {
+    updateNews(input: $input) {
+      id
+      title
+      date
+      description
+      type
+      image
+      featured
+    }
+  }
+`;
+
+const DELETE_NEWS = gql`
+  mutation DeleteNews($id: ID!) {
+    deleteNews(id: $id)
+  }
+`;
+
+const newsTypes = [
+  { label: 'Nouveau service', value: 'service' },
+  { label: 'Événement', value: 'event' },
+  { label: 'Média', value: 'media' },
+  { label: 'Formation', value: 'training' },
+];
 
 const NewsSection = () => {
   const { data, loading, error, refetch } = useQuery(GET_NEWS);
+
   const [createNews] = useMutation(CREATE_NEWS);
+  const [updateNews] = useMutation(UPDATE_NEWS);
+  const [deleteNews] = useMutation(DELETE_NEWS);
 
   const [modalOpen, setModalOpen] = useState(false);
-  const [form, setForm] = useState({
+  const [isEditMode, setIsEditMode] = useState(false);
+
+  const emptyForm = {
+    id: '',
     title: '',
     date: '',
     description: '',
     type: '',
     image: '',
-  });
+    featured: false,
+  };
 
-  const openModal = () => setModalOpen(true);
+  const [form, setForm] = useState(emptyForm);
+
+  const openModalForCreate = () => {
+    setForm(emptyForm);
+    setIsEditMode(false);
+    setModalOpen(true);
+  };
+
+  const openModalForEdit = (news) => {
+    setForm({
+      id: news.id,
+      title: news.title,
+      date: news.date,
+      description: news.description,
+      type: news.type,
+      image: news.image || '',
+      featured: news.featured,
+    });
+    setIsEditMode(true);
+    setModalOpen(true);
+  };
+
   const closeModal = () => {
-    setForm({ title: '', date: '', description: '', type: '', image: '' });
+    setForm(emptyForm);
+    setIsEditMode(false);
     setModalOpen(false);
   };
 
@@ -64,17 +127,38 @@ const NewsSection = () => {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleCheckboxChange = (e) => {
+    const { name, checked } = e.target;
+    setForm((prev) => ({ ...prev, [name]: checked }));
+  };
+
   const handleSubmit = async () => {
     try {
-      await createNews({ variables: { input: form } });
+      if (isEditMode) {
+        await updateNews({ variables: { input: form } });
+      } else {
+        const { id, ...input } = form; // Remove id for create
+        await createNews({ variables: { input } });
+      }
       await refetch();
       closeModal();
     } catch (err) {
-      alert('Erreur lors de la création: ' + err.message);
+      alert('Erreur lors de la sauvegarde : ' + err.message);
     }
   };
 
-  console.log('newsList:', data?.newsList); // Debug
+  const handleDelete = async (id) => {
+    if (!window.confirm('Êtes-vous sûr de vouloir supprimer cette actualité ?')) return;
+
+    try {
+      await deleteNews({ variables: { id } });
+      await refetch();
+    } catch (err) {
+      alert('Erreur lors de la suppression : ' + err.message);
+    }
+  };
+
+  const isUrl = (str) => /^https?:\/\//.test(str);
 
   return (
     <section
@@ -98,7 +182,7 @@ const NewsSection = () => {
         Actualités
       </h2>
 
-      <Button variant="contained" color="primary" onClick={openModal} sx={{ mb: 3 }}>
+      <Button variant="contained" color="primary" onClick={openModalForCreate} sx={{ mb: 3 }}>
         Créer Actualité
       </Button>
 
@@ -132,25 +216,63 @@ const NewsSection = () => {
           }}
         >
           {data.newsList.map((news) => (
-            <NewsCard key={news.id} news={news} />
+            <NewsCard
+              key={news.id}
+              news={news}
+              onEdit={() => openModalForEdit(news)}
+              onDelete={() => handleDelete(news.id)}
+            />
           ))}
         </div>
       )}
 
       {/* Modal Form */}
       <Dialog open={modalOpen} onClose={closeModal} maxWidth="sm" fullWidth>
-        <DialogTitle>Créer une nouvelle actualité</DialogTitle>
+        <DialogTitle>{isEditMode ? 'Modifier une actualité' : 'Créer une nouvelle actualité'}</DialogTitle>
         <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
-          <TextField label="Titre" name="title" fullWidth value={form.title} onChange={handleChange} required />
-          <TextField label="Date" name="date" fullWidth value={form.date} onChange={handleChange} placeholder="Ex: 15 juin 2023" required />
-          <TextField label="Description" name="description" fullWidth multiline rows={3} value={form.description} onChange={handleChange} required />
-          <TextField label="Type" name="type" select fullWidth value={form.type} onChange={handleChange} required>
-            {newsTypes.map((type) => (
-              <MenuItem key={type} value={type}>
-                {type}
+          <TextField
+            label="Titre"
+            name="title"
+            fullWidth
+            value={form.title}
+            onChange={handleChange}
+            required
+          />
+          <TextField
+            label="Date"
+            name="date"
+            fullWidth
+            value={form.date}
+            onChange={handleChange}
+            placeholder="Ex: 2024-01-20"
+            required
+          />
+          <TextField
+            label="Contenu"
+            name="description"
+            fullWidth
+            multiline
+            rows={3}
+            value={form.description}
+            onChange={handleChange}
+            required
+          />
+          <TextField
+            label="Type"
+            name="type"
+            select
+            fullWidth
+            value={form.type}
+            onChange={handleChange}
+            required
+          >
+            {newsTypes.map(({ label, value }) => (
+              <MenuItem key={value} value={value}>
+                {label}
               </MenuItem>
             ))}
           </TextField>
+
           <TextField
             label="Image (emoji ou URL)"
             name="image"
@@ -181,7 +303,7 @@ const NewsSection = () => {
             />
           </Button>
 
-          {form.image && /^https?:\/\//.test(form.image) && (
+          {form.image && isUrl(form.image) && (
             <Box sx={{ mt: 1 }}>
               <Typography variant="caption">Aperçu :</Typography>
               <Box
@@ -200,11 +322,22 @@ const NewsSection = () => {
             </Box>
           )}
 
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={form.featured}
+                onChange={handleCheckboxChange}
+                name="featured"
+              />
+            }
+            label="Mettre en avant"
+          />
         </DialogContent>
+
         <DialogActions>
           <Button onClick={closeModal}>Annuler</Button>
-          <Button variant="contained" onClick={handleSubmit}>
-            Créer
+          <Button onClick={handleSubmit} variant="contained" color="primary">
+            {isEditMode ? 'Mettre à jour' : 'Créer'}
           </Button>
         </DialogActions>
       </Dialog>
@@ -212,93 +345,73 @@ const NewsSection = () => {
   );
 };
 
-const NewsCard = ({ news }) => {
-  const isUrl = (str) => /^https?:\/\//.test(str);
-
+const NewsCard = ({ news, onEdit, onDelete }) => {
   return (
-    <div
-      style={{
-        backgroundColor: '#ffffff',
-        padding: '24px',
-        borderRadius: '12px',
-        width: '100%',
-        maxWidth: '300px',
-        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)',
-        border: '1px solid #e2e8f0',
-        textAlign: 'left',
+    <Box
+      sx={{
+        maxWidth: 320,
+        p: 2,
+        boxShadow: '0 4px 6px rgb(0 0 0 / 0.1)',
+        borderRadius: 2,
+        backgroundColor: '#fff',
+        position: 'relative',
         display: 'flex',
         flexDirection: 'column',
-        gap: '12px',
+        gap: 1,
       }}
     >
-      {/* Section Image ou Emoji */}
-      <div
-        style={{
-          height: '64px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          overflow: 'hidden',
-        }}
+      <Typography
+        variant="caption"
+        sx={{ fontWeight: '700', color: news.featured ? '#059669' : '#94a3b8' }}
       >
-        {news.image ? (
-          isUrl(news.image) ? (
+        {news.type.toUpperCase()}
+      </Typography>
+
+      <Typography variant="h6" sx={{ fontWeight: 700 }}>
+        {news.title}
+      </Typography>
+
+      <Typography variant="body2" sx={{ color: '#475569', flexGrow: 1, whiteSpace: 'pre-line' }}>
+        {news.description}
+      </Typography>
+
+      {news.image && (
+        <Box
+          sx={{
+            fontSize: news.image.length === 1 ? '2rem' : '1rem',
+            mt: 1,
+          }}
+        >
+          {news.image.length === 1 ? (
+            <span aria-label="emoji">{news.image}</span>
+          ) : (
             <img
               src={news.image}
-              alt={news.title}
-              style={{ maxHeight: '48px', maxWidth: '100%', objectFit: 'contain' }}
-              onError={(e) => (e.target.style.display = 'none')}
+              alt="news"
+              style={{ maxWidth: '100%', borderRadius: '4px' }}
+              loading="lazy"
             />
-          ) : (
-            <span style={{ fontSize: '2.5rem' }}>{news.image}</span>
-          )
-        ) : (
-          <span style={{ fontSize: '1rem', color: '#cbd5e1' }}>Aucune image</span>
-        )}
-      </div>
+          )}
+        </Box>
+      )}
 
-      {/* Titre */}
-      <h3
-        style={{
-          fontSize: '1.125rem',
-          fontWeight: '700',
-          color: '#0f172a',
-          marginBottom: '4px',
-        }}
+      <Typography
+        variant="caption"
+        sx={{ color: '#94a3b8', mt: 1, textAlign: 'right' }}
       >
-        {news.title}
-      </h3>
+        {news.date}
+      </Typography>
 
-      {/* Description */}
-      <p
-        style={{
-          fontSize: '0.95rem',
-          color: '#475569',
-          lineHeight: '1.5',
-        }}
-      >
-        {news.description}
-      </p>
-
-      {/* Infos Date + Type */}
-      <div
-        style={{
-          fontSize: '0.875rem',
-          color: '#64748b',
-          marginTop: 'auto',
-        }}
-      >
-        <span>
-          <strong>📅</strong> {news.date}
-        </span>
-        <br />
-        <span>
-          <strong>🏷️</strong> {news.type}
-        </span>
-      </div>
-    </div>
+      <Stack direction="row" spacing={1} sx={{ mt: 1, justifyContent: 'flex-end' }}>
+        <IconButton size="small" color="primary" onClick={onEdit} aria-label="Modifier">
+          <EditIcon fontSize="small" />
+        </IconButton>
+        <IconButton size="small" color="error" onClick={onDelete} aria-label="Supprimer">
+          <DeleteIcon fontSize="small" />
+        </IconButton>
+      </Stack>
+    </Box>
   );
 };
-
 
 export default NewsSection;

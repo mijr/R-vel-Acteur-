@@ -1,4 +1,3 @@
-// graphql/newsSchema.js
 const { gql } = require('apollo-server-express');
 
 const newsSchema = gql`
@@ -9,10 +8,7 @@ const newsSchema = gql`
     description: String!
     type: String!
     image: String
-  }
-
-  type Query {
-    newsList: [News!]!
+    featured: Boolean!
   }
 
   input CreateNewsInput {
@@ -21,10 +17,28 @@ const newsSchema = gql`
     description: String!
     type: String!
     image: String
+    featured: Boolean
+  }
+
+  input UpdateNewsInput {
+    id: ID!
+    title: String
+    date: String
+    description: String
+    type: String
+    image: String
+    featured: Boolean
+  }
+
+  type Query {
+    newsList: [News!]!
+    news(id: ID!): News
   }
 
   type Mutation {
     createNews(input: CreateNewsInput!): News!
+    updateNews(input: UpdateNewsInput!): News!
+    deleteNews(id: ID!): Boolean!
   }
 `;
 

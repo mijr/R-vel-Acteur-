@@ -6,6 +6,7 @@ const { Op } = require('sequelize');
 require('dotenv').config();
 
 const sendEmail = require('../../utils/sendEmail');
+const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
 const generateToken = (user) =>
   jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '7d' });
 
@@ -37,34 +38,41 @@ module.exports = {
       const token = generateToken(user);
       return { token, user };
     },
-    requestPasswordReset: async (_, { email }) => {
-      const user = await User.findOne({ where: { email } });
-      if (!user) return "If the email exists, a reset link was sent.";
+ requestPasswordReset: async (_, { email }) => {
+  const user = await User.findOne({ where: { email } });
+  if (!user) throw new Error("User not found");
 
-      const token = crypto.randomBytes(32).toString('hex');
-      user.resetToken = token;
-      user.resetTokenExpiry = new Date(Date.now() + 3600000); // 1h
+  const otpCode = generateOTP();
+  const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 min expiry
+
+  user.otpCode = otpCode;
+  user.otpExpiry = otpExpiry;
+  await user.save();
+
+  const subject = "Password Reset Request";
+  const html = `<p>Your OTP code is <strong>${otpCode}</strong>. It expires in 10 minutes.</p>`;
+
+  try {
+    await sendEmail(user.email, subject, html);
+    return true;
+  } catch (e) {
+    throw new Error("Échec de l'envoi de l'email : Failed to send email");
+  }
+},
+    resetPasswordWithOTP: async (_, { email, otpCode, newPassword }) => {
+      const user = await User.findOne({ where: { email } });
+
+      if (!user) throw new Error('User not found');
+      if (!user.otpCode || user.otpCode !== otpCode) throw new Error('Invalid OTP code');
+      if (user.otpExpiry < new Date()) throw new Error('OTP code expired');
+
+      user.password = await bcrypt.hash(newPassword, 10);
+      user.otpCode = null;
+      user.otpExpiry = null;
       await user.save();
 
-      const resetLink = `http://localhost:3000/reset-password/${token}`;
-
-      const html = `
-        <p>Bonjour ${user.firstName || ''},</p>
-        <p>Vous avez demandé une réinitialisation de mot de passe.</p>
-        <p>Cliquez sur le lien ci-dessous pour définir un nouveau mot de passe :</p>
-        <a href="${resetLink}" target="_blank">${resetLink}</a>
-        <p>Ce lien expire dans une heure.</p>
-        <p>Si vous n'avez rien demandé, ignorez simplement ce message.</p>
-      `;
-
-      try {
-        await sendEmail(user.email, "Réinitialisation de mot de passe", html);
-        return "Reset link sent to your  email.";
-      } catch (err) {
-        console.error('Erreur lors de l’envoi du mail :', err.message);
-        throw new Error(`Échec de l'envoi de l'email : ${err.message}`);
-      }
-    },
+      return "Password has been reset successfully.";
+    },  
 
     resetPassword: async (_, { token, newPassword }) => {
       const user = await User.findOne({
@@ -82,8 +90,11 @@ module.exports = {
     },
 
     updateUser: async (_, { id, input }, { user }) => {
-      if (!user) throw new Error('Unauthorized');
-      if (user.role !== 'admin') throw new Error('Access denied, admin only');
+     if (!user) throw new Error('Unauthorized');
+      if (user.role !== 'admin' && user.id !== id) {
+        throw new Error('Access denied');
+      }
+
 
       const userToUpdate = await User.findByPk(id);
       if (!userToUpdate) throw new Error('User not found');

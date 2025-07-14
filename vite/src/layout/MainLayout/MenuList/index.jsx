@@ -8,6 +8,7 @@ import Box from '@mui/material/Box';
 
 // project imports
 import NavItem from './NavItem';
+import otherMenu from '../../../menu-items/other'; // ← adapte ce chemin à ton projet
 import NavGroup from './NavGroup';
 import menuItems from 'menu-items';
 
@@ -25,24 +26,30 @@ function MenuList() {
   console.log('Role:', role); 
 
   const filteredItems = useMemo(() => {
-    if (role === 'admin') return menuItems.items;
+  if (role === 'admin') return [...menuItems.items, otherMenu];
 
-    if (role === 'user') {
-      const utilitiesGroup = menuItems.items.find((group) => group.id === 'utilities');
-      const bookEventItem = utilitiesGroup?.children?.find((i) => i.id === 'book-event');
+  if (role === 'user') {
+    const utilitiesGroup = menuItems.items.find((group) => group.id === 'utilities');
+    const bookEventItem = utilitiesGroup?.children?.find((i) => i.id === 'book-event');
 
-      if (bookEventItem) {
-        return [
-          {
-            ...utilitiesGroup,
-            children: [bookEventItem]
-          }
-        ];
-      }
+    const userMenu = [];
+
+    if (bookEventItem) {
+      userMenu.push({
+        ...utilitiesGroup,
+        children: [bookEventItem]
+      });
     }
 
-    return [];
-  }, [role]);
+    // Tous les utilisateurs voient le groupe "Témoignages", "Sample Page" et "Documentation"
+    userMenu.push(otherMenu);
+
+    return userMenu;
+  }
+
+  return [otherMenu]; // Cas sans rôle défini : montrer au moins Témoignages et Docs
+}, [role]);
+
 
   if (loading) return null;
   if (error || !data?.me) return (

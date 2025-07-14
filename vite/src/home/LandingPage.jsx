@@ -1,39 +1,50 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import HeroSection from '../components/sections/HeroSection';
-import ServicesSection from '../components/sections/ServicesSection';
-import TestimonialsSection from '../components/sections/TestimonialsSection';
-import AboutSection from '../components/sections/AboutSection';
-import FAQSection from '../components/sections/FAQSection';
-import NewsSection from '../components/sections/NewsSection';
-import BlogSection from '../components/sections/BlogSection';
-import FooterSection from '../components/sections/Footer';
-import Navbar from '../components/sections/Navbar';
+import React, { useState } from 'react';
+import Header from '../components/Header';
+import Footer from '../components/Footer';
+import HomePage from '../components/HomePage';
+import ServicesPage from '../components/ServicesPage';
+import TestimonialsPage from '../components/TestimonialsPage';
+import AboutPage from '../components/AboutPage';
+import FAQPage from '../components/FAQPage';
+import NewsPage from '../components/NewsPage';
+import BlogPage from '../components/BlogPage';
+import AppointmentPage from '../components/AppointmentPage';
 
-const LandingPage = () => {
-  const navigate = useNavigate();
+function App() {
+  const [currentPage, setCurrentPage] = useState('home');
 
-  const navItems = [
-    { label: 'Accueil', anchor: '#accueil' },
-    { label: 'Nos prestations', anchor: '#nos-prestations' },
-    { label: 'Témoignages', anchor: '#témoignages' },
-    { label: 'Qui sommes-nous', anchor: '#qui-sommes-nous' },
-    { label: 'FAQ', anchor: '#faq' },
-    { label: 'Actualités', path: '/news' },
-    { label: 'Blog', path: '/blog' },
-  ];
+  const renderCurrentPage = () => {
+    switch (currentPage) {
+      case 'home':
+        return <HomePage onNavigate={setCurrentPage} />;
+      case 'services':
+        return <ServicesPage onNavigate={setCurrentPage} />;
+      case 'testimonials':
+        return <TestimonialsPage />;
+      case 'about':
+        return <AboutPage onNavigate={setCurrentPage} />;
+      case 'faq':
+        return <FAQPage />;
+      case 'news':
+        return <NewsPage />;
+      case 'blog':
+        return <BlogPage />;
+      case 'appointment':
+        return <AppointmentPage />;
+      default:
+        return <HomePage onNavigate={setCurrentPage} />;
+    }
+  };
 
   return (
-    <div style={{ backgroundColor: '#ffffff', color: '#1e293b' }}>
-      <Navbar navItems={navItems} />
-      <HeroSection />
-      <ServicesSection />
-      <TestimonialsSection />
-      <AboutSection />
-      <FAQSection />
-      <FooterSection navItems={navItems} />
+    <div className="min-h-screen bg-gray-50">
+      <Header currentPage={currentPage} onNavigate={setCurrentPage} />
+      <main>
+        {renderCurrentPage()}
+      </main>
+      <Footer />
     </div>
   );
-};
+}
 
-export default LandingPage;
+export default App;
