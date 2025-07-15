@@ -10,8 +10,7 @@ const icons = {
 
 const pages = {
   id: 'pages',
-  title: 'Pages',
-  caption: 'Pages Caption',
+  title: 'Auth',
   icon: icons.IconKey,
   type: 'group',
   children: [

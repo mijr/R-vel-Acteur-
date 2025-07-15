@@ -1,33 +1,48 @@
 import React, { useState } from 'react';
 import {
-  Box,
-  Typography,
-  Container,
-  TextField,
-  InputAdornment,
-  Select,
-  MenuItem,
-  Grid,
-  Card,
-  CardContent,
-  CardActions,
-  Button,
-  Chip,
-  Paper,
+  Box, Typography, Container, TextField, InputAdornment, Select, MenuItem, Grid,
+  Card, CardContent, CardActions, Button, Chip, Paper, CircularProgress
 } from '@mui/material';
 import {
-  CalendarToday,
-  AccessTime,
-  Search,
+  CalendarToday, AccessTime, Search
 } from '@mui/icons-material';
 import { Play, Headphones, FileText } from 'lucide-react';
-import { blogPosts } from '../data/mockData';
+import { gql, useQuery } from '@apollo/client';
+
+const GET_ARTICLES = gql`
+  query Articles($keyword: String, $category: String, $type: ContentType, $theme: String) {
+    articles(keyword: $keyword, category: $category, type: $type, theme: $theme) {
+      id
+      title
+      content
+      category
+      type
+      mediaUrl
+      duration
+      theme
+      date
+      allowDownload
+    }
+  }
+`;
 
 const BlogPage = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedType, setSelectedType] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
 
+  const buildQueryVariables = () => {
+    const vars = {};
+    if (selectedCategory !== 'all') vars.category = selectedCategory;
+    if (selectedType !== 'all') vars.type = selectedType.toUpperCase(); // matches ENUM
+    if (searchTerm.trim()) vars.keyword = searchTerm.trim();
+    return vars;
+  };
+
+  const { data, loading } = useQuery(GET_ARTICLES, {
+    variables: buildQueryVariables()
+  });
+ console.log(data)
   const categories = [
     { id: 'all', name: 'Toutes les catégories' },
     { id: 'coaching', name: 'Coaching' },
@@ -38,38 +53,29 @@ const BlogPage = () => {
 
   const contentTypes = [
     { id: 'all', name: 'Tous les formats' },
-    { id: 'article', name: 'Articles' },
+    { id: 'text', name: 'Articles' },
     { id: 'video', name: 'Vidéos' },
-    { id: 'podcast', name: 'Podcasts' },
+    { id: 'audio', name: 'Podcasts' },
   ];
 
   const getTypeIcon = (type) => {
-    switch (type) {
+    switch (type.toLowerCase()) {
       case 'video': return <Play size={16} />;
-      case 'podcast': return <Headphones size={16} />;
+      case 'audio': return <Headphones size={16} />;
       default: return <FileText size={16} />;
     }
   };
 
   const getTypeColor = (type) => {
-    switch (type) {
+    switch (type.toLowerCase()) {
       case 'video': return { bgcolor: 'error.light', color: 'error.dark' };
-      case 'podcast': return { bgcolor: 'success.light', color: 'success.dark' };
+      case 'audio': return { bgcolor: 'success.light', color: 'success.dark' };
       default: return { bgcolor: 'primary.light', color: 'primary.dark' };
     }
   };
 
-  const filteredPosts = blogPosts.filter(post => {
-    const categoryMatch = selectedCategory === 'all' || post.category === selectedCategory;
-    const typeMatch = selectedType === 'all' || post.type === selectedType;
-    const searchMatch = searchTerm === '' ||
-      post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      post.excerpt.toLowerCase().includes(searchTerm.toLowerCase());
-    return categoryMatch && typeMatch && searchMatch;
-  });
-
-  const sortedPosts = [...filteredPosts].sort((a, b) =>
-    new Date(b.publishDate).getTime() - new Date(a.publishDate).getTime()
+  const sortedPosts = [...(data?.articles || [])].sort((a, b) =>
+    new Date(b.date).getTime() - new Date(a.date).getTime()
   );
 
   return (
@@ -87,11 +93,11 @@ const BlogPage = () => {
         </Container>
       </Box>
 
-      {/* Search and Filters */}
+      {/* Search & Filters */}
       <Box sx={{ py: 4, borderBottom: 1, borderColor: 'divider', bgcolor: 'background.paper' }}>
         <Container maxWidth="lg">
           <Grid container spacing={2}>
-            <Grid item xs={12} md={6} lg={6}>
+            <Grid item xs={12} md={6}>
               <TextField
                 fullWidth
                 variant="outlined"
@@ -107,28 +113,26 @@ const BlogPage = () => {
                 }}
               />
             </Grid>
-
-            <Grid item xs={6} md={3} lg={3}>
+            <Grid item xs={6} md={3}>
               <Select
                 fullWidth
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
               >
-                {categories.map((cat) => (
+                {categories.map(cat => (
                   <MenuItem key={cat.id} value={cat.id}>
                     {cat.name}
                   </MenuItem>
                 ))}
               </Select>
             </Grid>
-
-            <Grid item xs={6} md={3} lg={3}>
+            <Grid item xs={6} md={3}>
               <Select
                 fullWidth
                 value={selectedType}
                 onChange={(e) => setSelectedType(e.target.value)}
               >
-                {contentTypes.map((type) => (
+                {contentTypes.map(type => (
                   <MenuItem key={type.id} value={type.id}>
                     {type.name}
                   </MenuItem>
@@ -142,112 +146,102 @@ const BlogPage = () => {
       {/* Blog Grid */}
       <Box sx={{ py: 6 }}>
         <Container maxWidth="lg">
-          <Grid container spacing={4}>
-            {sortedPosts.map((post) => (
-              <Grid item xs={12} sm={6} md={4} key={post.id}>
-                <Card elevation={3}>
-                  <CardContent>
-                    <Box display="flex" justifyContent="space-between" mb={2}>
-                      <Box display="flex" gap={1} alignItems="center">
-                        <Chip
-                          label={
-                            <Box display="flex" alignItems="center" gap={0.5}>
-                              {getTypeIcon(post.type)}
-                              {post.type}
-                            </Box>
-                          }
-                          size="small"
-                          sx={{ ...getTypeColor(post.type), textTransform: 'capitalize' }}
-                        />
-                        <Chip label={post.category} size="small" variant="outlined" />
-                      </Box>
-                    </Box>
-
-                    <Typography variant="h6" gutterBottom noWrap>
-                      {post.title}
-                    </Typography>
-
-                    <Typography variant="body2" color="text.secondary" sx={{ display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                      {post.excerpt}
-                    </Typography>
-
-                    {post.mediaUrl && (
-                      <Paper
-                        elevation={0}
-                        sx={{ mt: 2, p: 2, bgcolor: 'grey.100', textAlign: 'center' }}
-                      >
-                        <Box display="flex" alignItems="center" justifyContent="center" color="grey.600">
-                          {post.type === 'video' && <Play size={20} />}
-                          {post.type === 'podcast' && <Headphones size={20} />}
-                          <Typography variant="body2" ml={1}>
-                            {post.type === 'video' ? 'Vidéo disponible' : 'Podcast disponible'}
-                          </Typography>
+          {loading ? (
+            <Box textAlign="center" py={10}>
+              <CircularProgress />
+            </Box>
+          ) : (
+            <Grid container spacing={4}>
+              {sortedPosts.map((post) => (
+                <Grid item xs={12} sm={6} md={4} key={post.id}>
+                  <Card elevation={3}>
+                    <CardContent>
+                      <Box display="flex" justifyContent="space-between" mb={2}>
+                        <Box display="flex" gap={1} alignItems="center">
+                          <Chip
+                            label={
+                              <Box display="flex" alignItems="center" gap={0.5}>
+                                {getTypeIcon(post.type)}
+                                {post.type}
+                              </Box>
+                            }
+                            size="small"
+                            sx={{ ...getTypeColor(post.type), textTransform: 'capitalize' }}
+                          />
+                          <Chip label={post.category} size="small" variant="outlined" />
                         </Box>
-                      </Paper>
-                    )}
-
-                    <Box display="flex" justifyContent="space-between" mt={3} color="text.secondary" fontSize={14}>
-                      <Box display="flex" alignItems="center" gap={0.5}>
-                        <CalendarToday sx={{ fontSize: 16 }} />
-                        {new Date(post.publishDate).toLocaleDateString('fr-FR')}
                       </Box>
-                      <Box display="flex" alignItems="center" gap={0.5}>
-                        <AccessTime sx={{ fontSize: 16 }} />
-                        {post.readTime}
+
+                      <Typography variant="h6" gutterBottom noWrap>
+                        {post.title}
+                      </Typography>
+
+                      {post.mediaUrl && (post.type === 'VIDEO' || post.type === 'AUDIO') && (
+                        <Paper
+                          elevation={0}
+                          sx={{ mt: 2, p: 2, bgcolor: 'grey.100', textAlign: 'center' }}
+                        >
+                          {post.type === 'VIDEO' ? (
+                            <Box sx={{ position: 'relative', paddingTop: '56.25%' }}>
+                              <iframe
+                                src={post.mediaUrl.replace("watch?v=", "embed/")}
+                                title={post.title}
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowFullScreen
+                                style={{
+                                  position: 'absolute',
+                                  top: 0,
+                                  left: 0,
+                                  width: '100%',
+                                  height: '100%',
+                                  border: 'none'
+                                }}
+                              />
+                            </Box>
+                          ) : (
+                            <Box display="flex" alignItems="center" justifyContent="center" gap={1}>
+                              <Headphones size={20} />
+                              <Typography variant="body2" color="text.secondary">
+                                <a href={post.mediaUrl} target="_blank" rel="noopener noreferrer">
+                                  Écouter le podcast
+                                </a>
+                              </Typography>
+                            </Box>
+                          )}
+                        </Paper>
+                      )}
+
+
+                      <Box display="flex" justifyContent="space-between" mt={3} color="text.secondary" fontSize={14}>
+                        <Box display="flex" alignItems="center" gap={0.5}>
+                          <CalendarToday sx={{ fontSize: 16 }} />
+                          {new Date(post.date).toLocaleDateString('fr-FR')}
+                        </Box>
+                        <Box display="flex" alignItems="center" gap={0.5}>
+                          <AccessTime sx={{ fontSize: 16 }} />
+                          {post.duration ? `${post.duration} min` : '—'}
+                        </Box>
                       </Box>
-                    </Box>
-                  </CardContent>
+                    </CardContent>
 
-                  <CardActions>
-                    <Button fullWidth variant="contained" color="primary">
-                      Lire l'article
-                    </Button>
-                  </CardActions>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
+                    <CardActions>
+                      <Button fullWidth variant="contained" color="primary">
+                        Lire l'article
+                      </Button>
+                    </CardActions>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+          )}
 
-          {sortedPosts.length === 0 && (
+          {!loading && sortedPosts.length === 0 && (
             <Box textAlign="center" py={10}>
               <Typography variant="h6" color="text.secondary">
                 Aucun article ne correspond à votre recherche.
               </Typography>
             </Box>
           )}
-        </Container>
-      </Box>
-
-      {/* Newsletter CTA */}
-      <Box sx={{ py: 8, bgcolor: 'primary.main', color: 'white' }}>
-        <Container maxWidth="lg" sx={{ textAlign: 'center' }}>
-          <Typography variant="h4" fontWeight="bold" gutterBottom>
-            Ne manquez rien de nos publications
-          </Typography>
-          <Typography variant="h6" sx={{ mb: 4 }}>
-            Recevez nos derniers articles directement dans votre boîte email
-          </Typography>
-          <Box display="flex" maxWidth={400} mx="auto">
-            <TextField
-              variant="filled"
-              placeholder="Votre adresse email"
-              fullWidth
-              InputProps={{ disableUnderline: true }}
-              sx={{ borderRadius: '8px 0 0 8px', bgcolor: 'white' }}
-            />
-            <Button
-              variant="contained"
-              sx={{
-                bgcolor: 'white',
-                color: 'primary.main',
-                borderRadius: '0 8px 8px 0',
-                fontWeight: 'bold',
-                '&:hover': { bgcolor: 'grey.100' },
-              }}
-            >
-              S'abonner
-            </Button>
-          </Box>
         </Container>
       </Box>
     </Box>

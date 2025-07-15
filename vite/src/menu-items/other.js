@@ -1,8 +1,9 @@
 // assets
-import { IconBrandChrome, IconHelp, IconMessage } from '@tabler/icons-react';
+import { IconBrandChrome, IconHelp,IconArticle, IconMessage } from '@tabler/icons-react';
+import DashboardCustomizeIcon from '@mui/icons-material/DashboardCustomize';
 
 // constant
-const icons = { IconBrandChrome, IconHelp, IconMessage };
+const icons = { IconBrandChrome, IconHelp, IconArticle, IconMessage, DashboardCustomizeIcon };
 
 // ==============================|| SAMPLE PAGE & DOCUMENTATION MENU ITEMS ||============================== //
 
@@ -10,12 +11,21 @@ const other = {
   id: 'sample-docs-roadmap',
   type: 'group',
   children: [
+    
     {
-      id: 'sample-page',
-      title: 'Sample Page',
+      id: 'blog',
+      title: 'Blog',
       type: 'item',
-      url: '/sample-page',
-      icon: icons.IconBrandChrome,
+      url: '/articles',
+      icon: IconArticle,
+      breadcrumbs: false
+    },
+      {
+      id: 'userDashboard',
+      title: 'KPI Dashboard',
+      type: 'item',
+      url: '/userDashboard',
+      icon: icons.DashboardCustomizeIcon,
       breadcrumbs: false
     },
     {

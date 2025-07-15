@@ -18,8 +18,9 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import SearchIcon from '@mui/icons-material/Search';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import { faqs } from '../data/mockData';
-
+import { useNavigate } from 'react-router-dom';
 const FAQPage = () => {
+   const navigate = useNavigate();
   const [openItems, setOpenItems] = useState(new Set());
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
@@ -50,7 +51,7 @@ const FAQPage = () => {
       faq.answer.toLowerCase().includes(searchTerm.toLowerCase());
     return categoryMatch && searchMatch;
   });
-
+   const handleLogin = () => navigate('/pages/login');
   return (
     <Box sx={{ minHeight: '100vh', backgroundColor: '#f9fafb' }}>
       {/* Header */}
@@ -151,7 +152,7 @@ const FAQPage = () => {
             Notre équipe est disponible pour répondre à toutes vos questions spécifiques.
           </Typography>
           <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2, justifyContent: 'center', mt: 4 }}>
-            <Button variant="contained" color="primary" size="large">
+            <Button   onClick={handleLogin} variant="contained" color="primary" size="large">
               Prendre rendez-vous
             </Button>
             <Button variant="outlined" color="primary" size="large">

@@ -23,10 +23,12 @@ import {
   Chip,
 } from '@mui/material';
 import { services } from '../data/mockData';
+import { useNavigate } from 'react-router-dom';
 
 const ServicesPage = ({ onNavigate }) => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedAudience, setSelectedAudience] = useState('all');
+   const navigate = useNavigate();
 
   const categories = [
     { id: 'all', name: 'Tous les services', icon: null },
@@ -44,7 +46,10 @@ const ServicesPage = ({ onNavigate }) => {
     { id: 'equipes', name: 'Équipes' },
     { id: 'organisations', name: 'Organisations' },
   ];
+   
 
+    const handleLogin = () => navigate('/pages/login');
+    
   const filteredServices = services.filter((service) => {
     const categoryMatch =
       selectedCategory === 'all' || service.category === selectedCategory;
@@ -335,7 +340,7 @@ const ServicesPage = ({ onNavigate }) => {
           variant="contained"
           size="large"
           color="secondary"
-          onClick={() => onNavigate('appointment')}
+          onClick={handleLogin}
         >
           Prenez rendez-vous
         </Button>

@@ -178,7 +178,7 @@ export default function SearchSection() {
           sx={{ width: { md: 250, lg: 434 }, ml: 2, px: 2 }}
         />
         {/* Button to navigate to LandingPage on desktop */}
-        <Box sx={{ mt: 1 }}>
+        {/* <Box sx={{ mt: 1 }}>
           <Button
             variant="contained"
             color="primary"
@@ -186,7 +186,7 @@ export default function SearchSection() {
           >
             Aller à la page d'accueil
           </Button>
-        </Box>
+        </Box> */}
       </Box>
     </>
   );

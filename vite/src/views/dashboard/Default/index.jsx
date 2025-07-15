@@ -1,68 +1,93 @@
 import { useEffect, useState } from 'react';
+import { useQuery, gql } from '@apollo/client';
 
-// material-ui
-import Grid from '@mui/material/Grid';
+// MUI
+import { Grid, Typography, CircularProgress } from '@mui/material';
 
-// project imports
-import EarningCard from './EarningCard';
+// Admin Dashboard Components
+import TotalAppointment from './TotalAppointment';
 import PopularCard from './PopularCard';
-import TotalOrderLineChartCard from './TotalOrderLineChartCard';
-import TotalIncomeDarkCard from '../../../ui-component/cards/TotalIncomeDarkCard';
-import TotalIncomeLightCard from '../../../ui-component/cards/TotalIncomeLightCard';
+import TotalUser from './TotalUser';
 import TotalGrowthBarChart from './TotalGrowthBarChart';
+
+// User Dashboard Components (create these separately)
+import UserWelcomeCard from '../UserWelcomeCard';
+
 
 import { gridSpacing } from 'store/constant';
 
-// assets
-import StorefrontTwoToneIcon from '@mui/icons-material/StorefrontTwoTone';
+// GraphQL: Current User
+const GET_ME = gql`
+  query Me {
+    me {
+      id
+      firstName
+      lastName
+      role
+    }
+  }
+`;
 
-// ==============================|| DEFAULT DASHBOARD ||============================== //
+// ==============================|| DASHBOARD COMPONENT ||============================== //
 
 export default function Dashboard() {
   const [isLoading, setLoading] = useState(true);
 
-  useEffect(() => {
-    setLoading(false);
-  }, []);
+  const { data, loading, error } = useQuery(GET_ME);
 
-  return (
-    <Grid container spacing={gridSpacing}>
-      <Grid size={12}>
-        <Grid container spacing={gridSpacing}>
-          <Grid size={{ lg: 4, md: 6, sm: 6, xs: 12 }}>
-            <EarningCard isLoading={isLoading} />
+  useEffect(() => {
+    if (!loading) {
+      setLoading(false);
+    }
+  }, [loading]);
+
+  if (loading || isLoading) {
+    return <CircularProgress />;
+  }
+
+  if (error) {
+    return <Typography color="error">Erreur lors du chargement de l'utilisateur</Typography>;
+  }
+
+  const user = data?.me;
+  const isAdmin = user?.role === 'admin';
+
+  // ===================== ADMIN DASHBOARD =====================
+  if (isAdmin) {
+    return (
+      <Grid container spacing={gridSpacing}>
+        <Grid item xs={12}>
+          <Grid container spacing={gridSpacing}>
+            <Grid item lg={4} md={6} sm={6} xs={12}>
+              <TotalAppointment isLoading={isLoading} />
+            </Grid>
+            <Grid item lg={4} md={6} sm={6} xs={12}>
+              <TotalUser isLoading={isLoading} />
+            </Grid>
+            <Grid item lg={4} md={6} sm={6} xs={12}>
+              <TotalUser isLoading={isLoading} />
+            </Grid>
           </Grid>
-          <Grid size={{ lg: 4, md: 6, sm: 6, xs: 12 }}>
-            <TotalOrderLineChartCard isLoading={isLoading} />
-          </Grid>
-          <Grid size={{ lg: 4, md: 12, sm: 12, xs: 12 }}>
-            <Grid container spacing={gridSpacing}>
-              <Grid size={{ sm: 6, xs: 12, md: 6, lg: 12 }}>
-                <TotalIncomeDarkCard isLoading={isLoading} />
-              </Grid>
-              <Grid size={{ sm: 6, xs: 12, md: 6, lg: 12 }}>
-                <TotalIncomeLightCard
-                  {...{
-                    isLoading: isLoading,
-                    total: 203,
-                    label: 'Total Income',
-                    icon: <StorefrontTwoToneIcon fontSize="inherit" />
-                  }}
-                />
-              </Grid>
+        </Grid>
+        <Grid item xs={12}>
+          <Grid container spacing={gridSpacing}>
+            <Grid item xs={12} md={8}>
+              <TotalGrowthBarChart isLoading={isLoading} />
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <PopularCard isLoading={isLoading} />
             </Grid>
           </Grid>
         </Grid>
       </Grid>
-      <Grid size={12}>
-        <Grid container spacing={gridSpacing}>
-          <Grid size={{ xs: 12, md: 8 }}>
-            <TotalGrowthBarChart isLoading={isLoading} />
-          </Grid>
-          <Grid size={{ xs: 12, md: 4 }}>
-            <PopularCard isLoading={isLoading} />
-          </Grid>
-        </Grid>
+    );
+  }
+
+  // ===================== USER DASHBOARD =====================
+  return (
+    <Grid container spacing={gridSpacing}>
+      <Grid item xs={12}>
+        <UserWelcomeCard user={user} />
       </Grid>
     </Grid>
   );

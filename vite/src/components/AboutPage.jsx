@@ -1,5 +1,5 @@
 import React from 'react';
-import { Award, BookOpen, Heart, Users, Target, Globe } from 'lucide-react';
+import { Award, BookOpen, Heart, Users,FileText , Target, Globe } from 'lucide-react';
 import {
   Box,
   Typography,
@@ -13,6 +13,7 @@ import {
   Paper,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import { ChevronRight, ChevronLeft } from '@mui/icons-material';
 
 const AboutPage = ({ onNavigate }) => {
   const navigate = useNavigate();
@@ -62,6 +63,14 @@ const AboutPage = ({ onNavigate }) => {
     }
   ];
 
+  const steps = [
+  { icon: BookOpen, title: 'Analyse', text: 'Diagnostic approfondi de la situation...' },
+  { icon: Users, title: 'Accompagnement', text: 'Démarche collaborative utilisant des outils adaptés...' },
+  { icon: Target, title: 'Mise en œuvre', text: 'Mise en place concrète des actions planifiées...' },
+ 
+];
+
+
    const handleLogin = () => navigate('/pages/login');
 
   return (
@@ -81,25 +90,21 @@ const AboutPage = ({ onNavigate }) => {
       {/* Founder */}
       <Box py={10} bgcolor="white">
         <Container>
-          <Grid container spacing={4} alignItems="center">
-            <Grid item xs={12} md={6}>
-              <Typography variant="h4" gutterBottom>
-                Notre Fondateur
-              </Typography>
-              <Typography paragraph color="text.secondary">
-                Avec plus de 15 ans d'expérience dans l'accompagnement professionnel, notre fondateur a développé une approche unique qui allie rigueur méthodologique et dimension humaine.
-              </Typography>
-              <Typography paragraph color="text.secondary">
-                Diplômé en psychologie du travail et certifié coach professionnel, il a accompagné des centaines de particuliers et d'organisations dans leur développement.
-              </Typography>
-              <Typography paragraph color="text.secondary">
-                Passionné par la créativité et l'expression artistique, il intègre ces dimensions dans ses accompagnements pour révéler le potentiel de chacun de manière authentique.
-              </Typography>
-            </Grid>
-
-            <Grid item xs={12} md={6}>
-              <Paper elevation={3} sx={{ p: 4, textAlign: 'center', bgcolor: 'sky.50' }}>
-                <Avatar sx={{ width: 80, height: 80, bgcolor: 'sky.200', mx: 'auto', mb: 2 }}>
+          <Grid
+            container
+            spacing={4}
+            alignItems="center"
+            justifyContent="center"
+          >
+            {/* Avatar Card */}
+            <Grid item xs={12} md={5}>
+              <Paper
+                elevation={3}
+                sx={{ p: 4, textAlign: 'center', bgcolor: 'sky.50' }}
+              >
+                <Avatar
+                  sx={{ width: 80, height: 80, bgcolor: 'sky.200', mx: 'auto', mb: 2 }}
+                >
                   <Users size={40} color="#0284c7" />
                 </Avatar>
                 <Typography variant="h6" fontWeight="bold">
@@ -124,9 +129,26 @@ const AboutPage = ({ onNavigate }) => {
                 </Stack>
               </Paper>
             </Grid>
+
+            {/* Text Content */}
+            <Grid item xs={12} md={6}>
+              <Typography variant="h4" gutterBottom>
+                Notre Fondateur
+              </Typography>
+              <Typography paragraph color="text.secondary">
+                Avec plus de 15 ans d'expérience dans l'accompagnement professionnel, notre fondateur a développé une approche unique qui allie rigueur méthodologique et dimension humaine.
+              </Typography>
+              <Typography paragraph color="text.secondary">
+                Diplômé en psychologie du travail et certifié coach professionnel, il a accompagné des centaines de particuliers et d'organisations dans leur développement.
+              </Typography>
+              <Typography paragraph color="text.secondary">
+                Passionné par la créativité et l'expression artistique, il intègre ces dimensions dans ses accompagnements pour révéler le potentiel de chacun de manière authentique.
+              </Typography>
+            </Grid>
           </Grid>
         </Container>
       </Box>
+
 
       {/* Values */}
        <Box py={10} bgcolor="grey.50">
@@ -213,21 +235,26 @@ const AboutPage = ({ onNavigate }) => {
           <Typography variant="h6" align="center" color="text.secondary" mb={6}>
             Une méthodologie éprouvée pour des résultats durables
           </Typography>
-          <Grid container spacing={4}>
-            {[
-              { icon: BookOpen, title: 'Analyse', text: 'Diagnostic approfondi de la situation...' },
-              { icon: Users, title: 'Accompagnement', text: 'Démarche collaborative utilisant des outils adaptés...' },
-              { icon: Target, title: 'Résultats', text: 'Évaluation des progrès et mise en place d\'un plan d\'action...' }
-            ].map((step, i) => (
-              <Grid item xs={12} md={4} key={i}>
-                <Card sx={{ p: 3 }}>
-                  <Avatar sx={{ bgcolor: 'sky.100', mb: 2 }}>
-                    <step.icon size={24} color="#0284c7" />
-                  </Avatar>
-                  <Typography variant="h6" gutterBottom>{step.title}</Typography>
-                  <Typography color="text.secondary">{step.text}</Typography>
-                </Card>
-              </Grid>
+
+          <Grid
+            container
+            spacing={2}
+            alignItems="center"
+            justifyContent="center"
+            sx={{ flexWrap: 'wrap' }}
+          >
+            {steps.map((step, i) => (
+              <React.Fragment key={i}>
+                <Grid item xs={12} sm={6} md={3}>
+                  <Card sx={{ p: 3, textAlign: 'center', height: '100%' }}>
+                    <Avatar sx={{ bgcolor: 'sky.100', mb: 2, mx: 'auto' }}>
+                      <step.icon size={24} color="#0284c7" />
+                    </Avatar>
+                    <Typography variant="h6" gutterBottom>{step.title}</Typography>
+                    <Typography color="text.secondary">{step.text}</Typography>
+                  </Card>
+                </Grid>
+              </React.Fragment>
             ))}
           </Grid>
         </Container>
@@ -283,10 +310,10 @@ const AboutPage = ({ onNavigate }) => {
             Découvrez comment nous pouvons vous accompagner
           </Typography>
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} justifyContent="center">
-            <Button variant="contained" color="inherit" onClick={handleLogin}>
+            <Button variant="contained"  color="secondary" onClick={handleLogin}>
               Prendre rendez-vous
             </Button>
-            <Button variant="outlined" sx={{ color: 'white', borderColor: 'white' }} onClick={() => onNavigate('services')}>
+            <Button variant="outlined" sx={{ color: 'black', borderColor: 'blue' }} onClick={() => onNavigate('services')}>
               Découvrir nos services
             </Button>
           </Stack>

@@ -26,7 +26,7 @@ function MenuList() {
   console.log('Role:', role); 
 
   const filteredItems = useMemo(() => {
-  if (role === 'admin') return [...menuItems.items, otherMenu];
+  if (role === 'admin') return [...menuItems.items];
 
   if (role === 'user') {
     const utilitiesGroup = menuItems.items.find((group) => group.id === 'utilities');
@@ -40,9 +40,14 @@ function MenuList() {
         children: [bookEventItem]
       });
     }
-
+    
+      // Filter out 'blog' from otherMenu children before pushing
+      const filteredOtherMenu = {
+        ...otherMenu,
+        children: otherMenu.children.filter(item => item.id !== 'blog')
+      };
     // Tous les utilisateurs voient le groupe "Témoignages", "Sample Page" et "Documentation"
-    userMenu.push(otherMenu);
+    userMenu.push(filteredOtherMenu);
 
     return userMenu;
   }

@@ -18,7 +18,7 @@ import FormatQuoteIcon from '@mui/icons-material/FormatQuote';
 import StarIcon from '@mui/icons-material/Star';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-
+import { useNavigate } from 'react-router-dom';
 // Example testimonials data - replace this import with your actual data
 const testimonials = [
   {
@@ -72,11 +72,13 @@ const testimonials = [
 const CARD_WIDTH = 320;
 
 const TestimonialsPage = () => {
+   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [selectedCategory, setSelectedCategory] = useState('all');
   const scrollRef = useRef(null);
-
+  
+    const handleLogin = () => navigate('/pages/login');
   const categories = [
     { id: 'all', name: 'Tous les témoignages' },
     { id: 'coaching', name: 'Coaching' },
@@ -367,6 +369,7 @@ const TestimonialsPage = () => {
             Découvrez comment nous pouvons vous accompagner dans votre développement
           </Typography>
           <Button
+          onClick={handleLogin}
             variant="contained"
             color="secondary"
             size="large"

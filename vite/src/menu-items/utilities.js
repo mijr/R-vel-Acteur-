@@ -6,7 +6,8 @@ import {
   IconShadow,
   IconUsers,
   IconWindmill,
-  IconNews 
+  IconNews,
+  IconCalendarStats 
 } from '@tabler/icons-react';
 
 
@@ -14,6 +15,7 @@ import {
 const icons = {
   IconCalendarEvent,
   IconCalendarPlus,
+  IconCalendarStats ,
   IconPalette,
   IconShadow,
   IconNews, // ← ce champ doit être présent 
@@ -35,6 +37,14 @@ const utilities = {
       type: 'item',
       url: '/AppointmentList',
       icon: icons.IconCalendarEvent,
+      breadcrumbs: false
+    },
+    {
+      id: 'SociologicalDashboard',
+      title: 'Progree sociologe',
+      type: 'item',
+      url: '/SociologicalDashboard',
+      icon: icons.IconCalendarStats,
       breadcrumbs: false
     },
     {

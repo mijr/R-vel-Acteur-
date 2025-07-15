@@ -14,6 +14,9 @@ const UtilsColor = Loadable(lazy(() => import('views/utilities/Color')));
 const UtilsUsers = Loadable(lazy(() => import('views/utilities/Users')));
 const UtilsNews = Loadable(lazy(()=>   import('views/utilities/News')));
 const UtilsComment = Loadable(lazy(() => import('views/utilities/Comment')));
+const UtilsBlog = Loadable(lazy(() =>import('views/utilities/Blog') ));
+const UtilsSociologicalDashboard = Loadable(lazy(() =>import('views/utilities/SociologicalDashboard') ));
+const UtilsUserDashboard = Loadable(lazy(() =>import('views/utilities/UserDashboard') ));
 // sample page routing
 const SamplePage = Loadable(lazy(() => import('views/sample-page')));
 const Profile = Loadable(lazy(() => import('views/sample-page/Profile')));
@@ -64,6 +67,20 @@ const MainRoutes = {
       path: '/Comment',
       element: <UtilsComment /> 
 
+    },
+     {
+      path: '/SociologicalDashboard',
+      element: <UtilsSociologicalDashboard /> 
+
+    },
+     {
+      path: '/UserDashboard',
+      element: <UtilsUserDashboard /> 
+
+    },
+    {
+      path:'/Articles',
+      element: <UtilsBlog/>
     },
     {
       path: '/Profile',
