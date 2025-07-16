@@ -2,6 +2,9 @@ const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 
 const User = require('./user')(sequelize, DataTypes);
+const News = require('./News')(sequelize, DataTypes);
+const Article = require('./Article')(sequelize, DataTypes);
+const Testimonial = require('./Testimonial')(sequelize, DataTypes);
 const WellbeingTrend = require('./kpiWellbeingTrend')(sequelize, DataTypes);
 const RadarSkill = require('./kpiRadarSkill')(sequelize, DataTypes);
 const KpiSummary = require('./kpiSummary')(sequelize, DataTypes);
@@ -20,6 +23,9 @@ const db = {
   sequelize,
   Sequelize,
   User,
+  News,
+  Article,
+  Testimonial,
   WellbeingTrend,
   RadarSkill,
   KpiSummary,
