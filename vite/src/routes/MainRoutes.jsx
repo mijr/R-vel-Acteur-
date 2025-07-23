@@ -11,6 +11,7 @@ const DashboardDefault = Loadable(lazy(() => import('views/dashboard/Default')))
 const AppointmentList = Loadable(lazy(() => import('views/utilities/AppointmentList')));
 const BookEvent = Loadable(lazy(() => import('views/utilities/BookEvent')));
 const UtilsColor = Loadable(lazy(() => import('views/utilities/Color')));
+const UtilsServices = Loadable(lazy(() => import('views/utilities/Services')));
 const UtilsUsers = Loadable(lazy(() => import('views/utilities/Users')));
 const UtilsNews = Loadable(lazy(()=>   import('views/utilities/News')));
 const UtilsComment = Loadable(lazy(() => import('views/utilities/Comment')));
@@ -60,8 +61,8 @@ const MainRoutes = {
       element: <UtilsUsers />
     },
     {
-      path: '/sample-page',
-      element: <SamplePage />
+      path: '/services',
+      element: <UtilsServices />
     },
     {
       path: '/Comment',

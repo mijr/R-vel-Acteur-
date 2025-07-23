@@ -22,14 +22,18 @@ import {
   Stack,
   Chip,
 } from '@mui/material';
-import { services } from '../data/mockData';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@apollo/client';
+import { GET_SERVICES } from '../graphql/queries';
 
 const ServicesPage = ({ onNavigate }) => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedAudience, setSelectedAudience] = useState('all');
-   const navigate = useNavigate();
-
+  const navigate = useNavigate();
+  
+  // Fetch services using GraphQL
+  const { data, loading, error } = useQuery(GET_SERVICES);
+  
   const categories = [
     { id: 'all', name: 'Tous les services', icon: null },
     { id: 'coaching', name: 'Coaching', icon: User },
@@ -46,10 +50,12 @@ const ServicesPage = ({ onNavigate }) => {
     { id: 'equipes', name: 'Équipes' },
     { id: 'organisations', name: 'Organisations' },
   ];
-   
-
-    const handleLogin = () => navigate('/pages/login');
-    
+  
+  const handleLogin = () => navigate('/pages/login');
+  
+  // Use data from GraphQL if available, otherwise fallback to empty array
+  const services = data?.services || [];
+  
   const filteredServices = services.filter((service) => {
     const categoryMatch =
       selectedCategory === 'all' || service.category === selectedCategory;
@@ -70,16 +76,16 @@ const ServicesPage = ({ onNavigate }) => {
 
   const scrollContainerRef = useRef(null);
 
-  // Scroll handler
   const scroll = (direction) => {
     const container = scrollContainerRef.current;
     if (!container) return;
 
-    // Scroll by width of 3 cards + gaps (320 * 3 + 32 * 2)
     const scrollAmount = direction === 'left' ? -(320 * 3 + 32 * 2) : 320 * 3 + 32 * 2;
-
     container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
   };
+
+  if (loading) return <Typography>Chargement en cours...</Typography>;
+  if (error) return <Typography>Erreur lors du chargement des services</Typography>;
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
@@ -185,9 +191,9 @@ const ServicesPage = ({ onNavigate }) => {
               overflowX: 'auto',
               scrollSnapType: 'x mandatory',
               gap: 3,
-              px: 6, // padding so chevrons don't cover content
-              scrollbarWidth: 'none', // Firefox
-              '&::-webkit-scrollbar': { display: 'none' }, // Chrome/Safari
+              px: 6,
+              scrollbarWidth: 'none',
+              '&::-webkit-scrollbar': { display: 'none' },
             }}
           >
             {filteredServices.length > 0 ? (
@@ -196,7 +202,7 @@ const ServicesPage = ({ onNavigate }) => {
                   key={service.id}
                   elevation={3}
                   sx={{
-                    flex: '0 0 320px', // fixed width for 3 items visible
+                    flex: '0 0 320px',
                     scrollSnapAlign: 'start',
                     p: 3,
                     display: 'flex',
@@ -270,7 +276,7 @@ const ServicesPage = ({ onNavigate }) => {
                     alignItems="center"
                   >
                     <Typography color="primary" fontWeight="bold">
-                      {service.pricing}
+                      {service.pricing}€/séance
                     </Typography>
                     <Button
                       endIcon={<ArrowRight size={18} />}

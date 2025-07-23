@@ -8,6 +8,7 @@ const Testimonial = require('./Testimonial')(sequelize, DataTypes);
 const WellbeingTrend = require('./kpiWellbeingTrend')(sequelize, DataTypes);
 const RadarSkill = require('./kpiRadarSkill')(sequelize, DataTypes);
 const KpiSummary = require('./kpiSummary')(sequelize, DataTypes);
+const Service = require('./Service')(sequelize, DataTypes);
 
 // Associations
 User.hasMany(WellbeingTrend, { foreignKey: 'userId', as: 'wellbeingTrends' });
@@ -25,6 +26,7 @@ const db = {
   User,
   News,
   Article,
+  Service,
   Testimonial,
   WellbeingTrend,
   RadarSkill,

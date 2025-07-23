@@ -2,13 +2,9 @@ const { Testimonial } = require('../../models');
 
 module.exports = {
   Query: {
-    testimonials: async () => {
-      return await Testimonial.findAll();
-    },
+    testimonials: async () => Testimonial.findAll(),
   },
   Mutation: {
-    createTestimonial: async (_, { input }) => {
-      return await Testimonial.create(input);
-    },
+    createTestimonial: async (_, { input }) => Testimonial.create(input),
   },
 };

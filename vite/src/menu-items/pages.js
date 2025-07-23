@@ -10,33 +10,25 @@ const icons = {
 
 const pages = {
   id: 'pages',
-  title: 'Auth',
+  title: 'Services',
   icon: icons.IconKey,
   type: 'group',
   children: [
-    {
-      id: 'authentication',
-      title: 'Authentication',
-      type: 'collapse',
-      icon: icons.IconKey,
-      children: [
         {
-          id: 'login',
-          title: 'login',
+          id: 'services',
+          title: 'Services',
           type: 'item',
-          url: '/pages/login',
+          url: '/services',
           target: true
         },
-        {
-          id: 'register',
-          title: 'register',
-          type: 'item',
-          url: '/pages/register',
-          target: true
-        }
+        // {
+        //   id: 'register',
+        //   title: 'register',
+        //   type: 'item',
+        //   url: '/pages/register',
+        //   target: true
+        // }
       ]
-    }
-  ]
 };
 
 export default pages;

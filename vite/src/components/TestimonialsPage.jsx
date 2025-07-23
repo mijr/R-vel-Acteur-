@@ -12,73 +12,30 @@ import {
   useMediaQuery,
   useTheme,
   Rating,
+  CircularProgress,
 } from '@mui/material';
 import FilterAltIcon from '@mui/icons-material/FilterAlt';
 import FormatQuoteIcon from '@mui/icons-material/FormatQuote';
 import StarIcon from '@mui/icons-material/Star';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import { useQuery } from '@apollo/client';
+import { GET_TESTIMONIALS } from '../graphql/queries'; // adjust path if needed
 import { useNavigate } from 'react-router-dom';
-// Example testimonials data - replace this import with your actual data
-const testimonials = [
-  {
-    id: 1,
-    name: 'Alice Dupont',
-    role: 'Coach',
-    organization: 'Coaching Pro',
-    serviceCategory: 'coaching',
-    content: 'Grâce au coaching, j’ai pu atteindre mes objectifs plus rapidement.',
-    rating: 5,
-  },
-  {
-    id: 2,
-    name: 'Marc Lemoine',
-    role: 'Formateur',
-    organization: 'Formation Express',
-    serviceCategory: 'formation',
-    content: 'La formation était claire, complète et très utile.',
-    rating: 4,
-  },
-  {
-    id: 3,
-    name: 'Sophie Martin',
-    role: 'Consultante',
-    organization: 'Médiation Plus',
-    serviceCategory: 'mediation',
-    content: 'La médiation a permis de résoudre des conflits efficacement.',
-    rating: 5,
-  },
-  {
-    id: 4,
-    name: 'Pauline Laurent',
-    role: 'Facilitatrice',
-    organization: 'Facilitation Experts',
-    serviceCategory: 'facilitation',
-    content: 'Les ateliers de facilitation ont dynamisé notre équipe.',
-    rating: 4,
-  },
-  {
-    id: 5,
-    name: 'Jean-Pierre',
-    role: 'Coach',
-    organization: 'Coaching Pro',
-    serviceCategory: 'coaching',
-    content: 'Coaching motivant et efficace, je recommande vivement.',
-    rating: 5,
-  },
-  // Add more testimonial objects here
-];
 
 const CARD_WIDTH = 320;
 
 const TestimonialsPage = () => {
-   const navigate = useNavigate();
+  const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [selectedCategory, setSelectedCategory] = useState('all');
   const scrollRef = useRef(null);
-  
-    const handleLogin = () => navigate('/pages/login');
+
+  const { loading, error, data } = useQuery(GET_TESTIMONIALS);
+
+  const handleLogin = () => navigate('/pages/login');
+
   const categories = [
     { id: 'all', name: 'Tous les témoignages' },
     { id: 'coaching', name: 'Coaching' },
@@ -87,20 +44,17 @@ const TestimonialsPage = () => {
     { id: 'facilitation', name: 'Facilitation' },
   ];
 
-  const filteredTestimonials = testimonials.filter(
-    (t) => selectedCategory === 'all' || t.serviceCategory === selectedCategory
-  );
+  const filteredTestimonials =
+    data?.testimonials?.filter(
+      (t) => selectedCategory === 'all' || t.serviceCategory === selectedCategory
+    ) || [];
 
   const scrollLeft = () => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollBy({ left: -CARD_WIDTH * 3, behavior: 'smooth' });
-    }
+    scrollRef.current?.scrollBy({ left: -CARD_WIDTH * 3, behavior: 'smooth' });
   };
 
   const scrollRight = () => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollBy({ left: CARD_WIDTH * 3, behavior: 'smooth' });
-    }
+    scrollRef.current?.scrollBy({ left: CARD_WIDTH * 3, behavior: 'smooth' });
   };
 
   return (
@@ -112,8 +66,7 @@ const TestimonialsPage = () => {
             Témoignages
           </Typography>
           <Typography variant="h6" color="text.secondary" maxWidth={600} mx="auto">
-            Découvrez l'expérience de nos clients et les résultats obtenus grâce à nos
-            accompagnements personnalisés.
+            Découvrez l'expérience de nos clients et les résultats obtenus grâce à nos accompagnements personnalisés.
           </Typography>
         </Box>
       </Container>
@@ -143,7 +96,15 @@ const TestimonialsPage = () => {
 
       {/* Testimonials */}
       <Container maxWidth="lg" sx={{ mb: 10, position: 'relative' }}>
-        {!isMobile ? (
+        {loading ? (
+          <Box display="flex" justifyContent="center" py={10}>
+            <CircularProgress />
+          </Box>
+        ) : error ? (
+          <Typography variant="h6" color="error" textAlign="center">
+            Une erreur s'est produite lors du chargement des témoignages.
+          </Typography>
+        ) : !isMobile ? (
           <>
             <Box
               ref={scrollRef}
@@ -187,16 +148,14 @@ const TestimonialsPage = () => {
                         size="small"
                       />
                     </Stack>
-
                     <Typography
                       variant="body1"
                       color="text.primary"
                       mb={4}
                       sx={{ fontStyle: 'italic', flexGrow: 1 }}
                     >
-                      "{testimonial.content}"
+                      "{testimonial.quote}"
                     </Typography>
-
                     <Box borderTop={1} borderColor="grey.300" pt={3}>
                       <Typography variant="subtitle1" fontWeight="bold">
                         {testimonial.name}
@@ -214,113 +173,62 @@ const TestimonialsPage = () => {
                   </Paper>
                 ))
               ) : (
-                <Typography
-                  variant="h6"
-                  color="text.secondary"
-                  textAlign="center"
-                  py={8}
-                  width="100%"
-                >
+                <Typography variant="h6" color="text.secondary" textAlign="center" py={8}>
                   Aucun témoignage ne correspond à cette catégorie.
                 </Typography>
               )}
             </Box>
 
-            {/* Scroll Arrows */}
-            <IconButton
-              onClick={scrollLeft}
-              aria-label="Scroll testimonials left"
-              sx={{
-                position: 'absolute',
-                top: '50%',
-                left: -40,
-                transform: 'translateY(-50%)',
-                bgcolor: 'background.paper',
-                boxShadow: 2,
-                '&:hover': { bgcolor: 'background.default' },
-                zIndex: 10,
-              }}
-            >
+            {/* Arrows */}
+            <IconButton onClick={scrollLeft} sx={arrowStyle('left')}>
               <ChevronLeftIcon />
             </IconButton>
-            <IconButton
-              onClick={scrollRight}
-              aria-label="Scroll testimonials right"
-              sx={{
-                position: 'absolute',
-                top: '50%',
-                right: -40,
-                transform: 'translateY(-50%)',
-                bgcolor: 'background.paper',
-                boxShadow: 2,
-                '&:hover': { bgcolor: 'background.default' },
-                zIndex: 10,
-              }}
-            >
+            <IconButton onClick={scrollRight} sx={arrowStyle('right')}>
               <ChevronRightIcon />
             </IconButton>
           </>
         ) : (
           <Grid container spacing={4}>
-            {filteredTestimonials.length > 0 ? (
-              filteredTestimonials.map((testimonial) => (
-                <Grid item xs={12} key={testimonial.id}>
-                  <Paper
-                    elevation={2}
-                    sx={{
-                      p: 4,
-                      display: 'flex',
-                      flexDirection: 'column',
-                      height: '100%',
-                      ':hover': { boxShadow: 6 },
-                    }}
+            {filteredTestimonials.map((testimonial) => (
+              <Grid item xs={12} key={testimonial.id}>
+                <Paper elevation={2} sx={{ p: 4, ':hover': { boxShadow: 6 } }}>
+                  <Stack direction="row" alignItems="center" spacing={1} mb={2}>
+                    <FormatQuoteIcon color="primary" fontSize="large" />
+                    <Rating
+                      name="read-only"
+                      value={testimonial.rating}
+                      readOnly
+                      precision={1}
+                      icon={<StarIcon fontSize="inherit" />}
+                      emptyIcon={<StarIcon fontSize="inherit" />}
+                      size="small"
+                    />
+                  </Stack>
+                  <Typography
+                    variant="body1"
+                    color="text.primary"
+                    mb={4}
+                    sx={{ fontStyle: 'italic' }}
                   >
-                    <Stack direction="row" alignItems="center" spacing={1} mb={2}>
-                      <FormatQuoteIcon color="primary" fontSize="large" />
-                      <Rating
-                        name="read-only"
-                        value={testimonial.rating}
-                        readOnly
-                        precision={1}
-                        icon={<StarIcon fontSize="inherit" />}
-                        emptyIcon={<StarIcon fontSize="inherit" />}
-                        size="small"
-                      />
-                    </Stack>
-
-                    <Typography
-                      variant="body1"
-                      color="text.primary"
-                      mb={4}
-                      sx={{ fontStyle: 'italic', flexGrow: 1 }}
-                    >
-                      "{testimonial.content}"
+                    "{testimonial.quote}"
+                  </Typography>
+                  <Box borderTop={1} borderColor="grey.300" pt={3}>
+                    <Typography variant="subtitle1" fontWeight="bold">
+                      {testimonial.name}
                     </Typography>
-
-                    <Box borderTop={1} borderColor="grey.300" pt={3}>
-                      <Typography variant="subtitle1" fontWeight="bold">
-                        {testimonial.name}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary" mb={1}>
-                        {testimonial.role} - {testimonial.organization}
-                      </Typography>
-                      <Chip
-                        label={testimonial.serviceCategory}
-                        color="primary"
-                        size="small"
-                        variant="outlined"
-                      />
-                    </Box>
-                  </Paper>
-                </Grid>
-              ))
-            ) : (
-              <Grid item xs={12}>
-                <Typography variant="h6" color="text.secondary" textAlign="center" py={8}>
-                  Aucun témoignage ne correspond à cette catégorie.
-                </Typography>
+                    <Typography variant="body2" color="text.secondary" mb={1}>
+                      {testimonial.role} - {testimonial.organization}
+                    </Typography>
+                    <Chip
+                      label={testimonial.serviceCategory}
+                      color="primary"
+                      size="small"
+                      variant="outlined"
+                    />
+                  </Box>
+                </Paper>
               </Grid>
-            )}
+            ))}
           </Grid>
         )}
       </Container>
@@ -368,13 +276,7 @@ const TestimonialsPage = () => {
           <Typography variant="h6" color="primary.light" mb={6}>
             Découvrez comment nous pouvons vous accompagner dans votre développement
           </Typography>
-          <Button
-          onClick={handleLogin}
-            variant="contained"
-            color="secondary"
-            size="large"
-            sx={{ fontWeight: 'bold' }}
-          >
+          <Button onClick={handleLogin} variant="contained" color="secondary" size="large">
             Commencer maintenant
           </Button>
         </Container>
@@ -382,5 +284,16 @@ const TestimonialsPage = () => {
     </Box>
   );
 };
+
+const arrowStyle = (side) => ({
+  position: 'absolute',
+  top: '50%',
+  [side]: -40,
+  transform: 'translateY(-50%)',
+  bgcolor: 'background.paper',
+  boxShadow: 2,
+  '&:hover': { bgcolor: 'background.default' },
+  zIndex: 10,
+});
 
 export default TestimonialsPage;

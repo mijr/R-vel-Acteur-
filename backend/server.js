@@ -11,6 +11,8 @@ const schema = require('./graphql/schema');
 const newsSchema = require('./graphql/newsSchema');
 const newsResolver = require('./graphql/resolvers/newsResolver');
 const testimonialSchema = require('./graphql/testimonialSchema');
+const serviceSchema = require('./graphql/serviceSchema');
+const serviceResolvers = require('./graphql/resolvers/serviceResolvers');
 const article = require('./graphql/article');
 const kpi  = require('./graphql/kpi');
 const testimonialResolvers = require('./graphql/resolvers/testimonialResolvers');
@@ -151,8 +153,8 @@ app.post('/api/book-event', async (req, res) => {
 });
 
 // ─── Apollo & DB Setup ──────────────────────────────────────────────────────
-const typeDefs = mergeTypeDefs([schema, appointment, newsSchema, testimonialSchema, article, kpi]);
-const resolvers = mergeResolvers([authResolvers, appointmentResolvers, newsResolver, testimonialResolvers, articleResolvers, kpiResolvers]);
+const typeDefs = mergeTypeDefs([schema, appointment, newsSchema, testimonialSchema, article, kpi, serviceSchema]);
+const resolvers = mergeResolvers([authResolvers, appointmentResolvers, newsResolver, testimonialResolvers, articleResolvers, kpiResolvers, serviceResolvers]);
 
 
 const startServer = async () => {
@@ -166,7 +168,10 @@ const startServer = async () => {
     resolvers,
     context: ({ req }) => {
       const token = req.headers.authorization?.split(' ')[1];
-      return { user: getUserFromToken(token) };
+      return { user: getUserFromToken(token),
+         models: db, 
+         
+       };
     }
   });
 

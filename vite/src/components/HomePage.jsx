@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react'; 
+import React, { useRef, useState } from 'react';
 import {
   Box,
   Container,
@@ -11,10 +11,11 @@ import {
   useTheme,
   useMediaQuery,
   IconButton,
+  CircularProgress,
+  Alert,
 } from '@mui/material';
 import {
   ArrowRight,
-  CheckCircle,
   Users,
   Target,
   Heart,
@@ -22,14 +23,23 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import StarIcon from '@mui/icons-material/Star';
-import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
-import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import { gql, useQuery } from '@apollo/client';
 import { useNavigate } from 'react-router-dom';
-import { services, testimonials } from '../data/mockData'; // Keep your static mock data for services & testimonials
 
-const CARD_WIDTH = 320;
-const SCROLL_STEP = CARD_WIDTH * 3;
+// GraphQL Queries
+const GET_SERVICES = gql`
+  query GetServices {
+    services {
+      id
+      title
+      description
+      category
+      methodology
+      targetAudience
+      pricing
+    }
+  }
+`;
 
 const GET_NEWS = gql`
   query NewsList {
@@ -44,6 +54,24 @@ const GET_NEWS = gql`
     }
   }
 `;
+
+const GET_TESTIMONIALS = gql`
+  query GetTestimonials {
+    testimonials {
+      id
+      name
+      role
+      organization
+      quote
+      serviceCategory
+      rating
+    }
+  }
+`;
+
+const CARD_WIDTH = 320;
+const SCROLL_STEP = CARD_WIDTH * 3;
+
 const frenchMonths = {
   janvier: 1,
   février: 2,
@@ -69,126 +97,67 @@ function parseFrenchDate(dateStr) {
   if (!month) return null;
   return new Date(`${year}-${month.toString().padStart(2, '0')}-${day.padStart(2, '0')}`);
 }
+
 const HomePage = ({ onNavigate }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const scrollRef = useRef(null);
-   const navigate = useNavigate();
+  const navigate = useNavigate();
 
-  const { data, loading, error } = useQuery(GET_NEWS);
-    const itemsPerPage = 3;
+  const { data: servicesData, loading: servicesLoading, error: servicesError } = useQuery(GET_SERVICES);
+  const { data: newsData, loading: newsLoading, error: newsError } = useQuery(GET_NEWS);
+  const { data: testimonialsData, loading: testimonialsLoading, error: testimonialsError } = useQuery(GET_TESTIMONIALS);
+
+  const servicesList = servicesData?.services || [];
+  const testimonialsList = testimonialsData?.testimonials || [];
+  
+  const itemsPerPage = 3;
   const [startIndex, setStartIndex] = useState(0);
-
   const canGoLeft = startIndex > 0;
-  const canGoRight = startIndex + itemsPerPage < testimonials.length;
+  const canGoRight = startIndex + itemsPerPage < testimonialsList.length;
+  const visibleTestimonials = testimonialsList.slice(startIndex, startIndex + itemsPerPage);
 
   const handleLeftClick = () => {
-    if (canGoLeft) {
-      setStartIndex(startIndex - itemsPerPage);
-    }
+    if (canGoLeft) setStartIndex(startIndex - itemsPerPage);
   };
 
   const handleRightClick = () => {
-    if (canGoRight) {
-      setStartIndex(startIndex + itemsPerPage);
-    }
+    if (canGoRight) setStartIndex(startIndex + itemsPerPage);
   };
 
-  const visibleTestimonials = testimonials.slice(
-    startIndex,
-    startIndex + itemsPerPage
-  );
-
   const scrollLeft = () => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollBy({ left: -SCROLL_STEP, behavior: 'smooth' });
-    }
+    if (scrollRef.current) scrollRef.current.scrollBy({ left: -SCROLL_STEP, behavior: 'smooth' });
   };
 
   const scrollRight = () => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollBy({ left: SCROLL_STEP, behavior: 'smooth' });
-    }
+    if (scrollRef.current) scrollRef.current.scrollBy({ left: SCROLL_STEP, behavior: 'smooth' });
   };
 
   const handleLogin = () => navigate('/pages/login');
+
   return (
     <Box sx={{ overflowX: 'hidden' }}>
       {/* Hero Section */}
-      <Box
-        sx={{
-          py: { xs: 8, md: 10 },
-          bgcolor: 'background.paper',
-          backgroundImage:
-            'linear-gradient(to bottom, rgba(240, 249, 255, 0.8), rgba(255, 255, 255, 1))',
-          textAlign: 'center',
-          position: 'relative',
-        }}
-      >
+      <Box sx={{ py: { xs: 8, md: 10 }, bgcolor: 'background.paper', backgroundImage: 'linear-gradient(to bottom, rgba(240, 249, 255, 0.8), rgba(255, 255, 255, 1))', textAlign: 'center' }}>
         <Container maxWidth="lg">
-          <Typography
-            variant={isMobile ? 'h3' : 'h2'}
-            fontWeight="bold"
-            gutterBottom
-            sx={{ lineHeight: 1.2, mb: 3 }}
-          >
+          <Typography variant={isMobile ? 'h3' : 'h2'} fontWeight="bold" gutterBottom sx={{ lineHeight: 1.2, mb: 3 }}>
             Révélez votre <Box component="span" color="primary.main">potentiel</Box>
           </Typography>
-          <Typography
-            variant={isMobile ? 'body1' : 'h6'}
-            color="text.secondary"
-            sx={{
-              maxWidth: 700,
-              mx: 'auto',
-              mb: 4,
-              fontSize: isMobile ? '1.1rem' : '1.25rem',
-            }}
-          >
-            Accompagnement professionnel en coaching, formation et médiation. Développez vos compétences et celles de vos équipes avec des méthodes éprouvées.
+          <Typography variant={isMobile ? 'body1' : 'h6'} color="text.secondary" sx={{ maxWidth: 700, mx: 'auto', mb: 4, fontSize: isMobile ? '1.1rem' : '1.25rem' }}>
+            Accompagnement professionnel en coaching, formation et médiation.
           </Typography>
-          <Stack
-            direction={{ xs: 'column', sm: 'row' }}
-            spacing={2}
-            justifyContent="center"
-            sx={{ mb: 2 }}
-          >
-            <Button
-              variant="contained"
-              size="large"
-              endIcon={<ArrowRight size={20} />}
-              onClick={handleLogin}
-              sx={{ px: 4, py: 1.5 }}
-            >
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} justifyContent="center" sx={{ mb: 2 }}>
+            <Button variant="contained" size="large" endIcon={<ArrowRight size={20} />} onClick={handleLogin} sx={{ px: 4, py: 1.5 }}>
               Prendre rendez-vous
             </Button>
-            <Button
-              variant="outlined"
-              color="primary"
-              size="large"
-              onClick={() => onNavigate('services')}
-              sx={{ px: 4, py: 1.5 }}
-            >
+            <Button variant="outlined" color="primary" size="large" onClick={() => onNavigate('services')} sx={{ px: 4, py: 1.5 }}>
               Découvrir nos services
             </Button>
           </Stack>
           {!isMobile && (
-            <Box
-              sx={{
-                mt: 6,
-                display: 'flex',
-                justifyContent: 'center',
-                gap: 2,
-                flexWrap: 'wrap',
-              }}
-            >
+            <Box sx={{ mt: 6, display: 'flex', justifyContent: 'center', gap: 2, flexWrap: 'wrap' }}>
               {['Coaching', 'Formation', 'Médiation'].map((tag, i) => (
-                <Chip
-                  key={i}
-                  label={tag}
-                  color="primary"
-                  variant="outlined"
-                  sx={{ borderRadius: 1, fontWeight: 500 }}
-                />
+                <Chip key={i} label={tag} color="primary" variant="outlined" sx={{ borderRadius: 1, fontWeight: 500 }} />
               ))}
             </Box>
           )}
@@ -196,39 +165,18 @@ const HomePage = ({ onNavigate }) => {
       </Box>
 
       {/* Statistics Section */}
-      <Box
-        sx={{
-          py: { xs: 6, md: 10 },
-          bgcolor: 'background.default',
-        }}
-      >
+      <Box sx={{ py: { xs: 6, md: 10 }, bgcolor: 'background.default' }}>
         <Container maxWidth="lg">
           <Grid container spacing={4} justifyContent="center">
             {[
-              {
-                icon: <Users size={isMobile ? 36 : 48} color={theme.palette.primary.main} />,
-                label: '500+',
-                sub: 'Clients accompagnés',
-              },
-              {
-                icon: <Target size={isMobile ? 36 : 48} color={theme.palette.primary.main} />,
-                label: '95%',
-                sub: 'Taux de satisfaction',
-              },
-              {
-                icon: <Heart size={isMobile ? 36 : 48} color={theme.palette.primary.main} />,
-                label: '10+',
-                sub: "Années d'expérience",
-              },
+              { icon: <Users size={36} color={theme.palette.primary.main} />, label: '500+', sub: 'Clients accompagnés' },
+              { icon: <Target size={36} color={theme.palette.primary.main} />, label: '95%', sub: 'Taux de satisfaction' },
+              { icon: <Heart size={36} color={theme.palette.primary.main} />, label: '10+', sub: "Années d'expérience" },
             ].map((stat, idx) => (
               <Grid item xs={6} sm={4} key={idx} textAlign="center">
                 <Box mb={2}>{stat.icon}</Box>
-                <Typography variant="h4" fontWeight="bold" color="primary.main">
-                  {stat.label}
-                </Typography>
-                <Typography color="text.secondary" variant="subtitle1">
-                  {stat.sub}
-                </Typography>
+                <Typography variant="h4" fontWeight="bold" color="primary.main">{stat.label}</Typography>
+                <Typography color="text.secondary" variant="subtitle1">{stat.sub}</Typography>
               </Grid>
             ))}
           </Grid>
@@ -238,213 +186,78 @@ const HomePage = ({ onNavigate }) => {
       {/* Services Section */}
       <Box sx={{ py: { xs: 6, md: 10 }, bgcolor: 'background.paper' }}>
         <Container maxWidth="lg">
-          <Typography
-            variant="h4"
-            fontWeight="bold"
-            gutterBottom
-            textAlign="center"
-            sx={{ mb: 4 }}
-          >
+          <Typography variant="h4" fontWeight="bold" gutterBottom textAlign="center" sx={{ mb: 4 }}>
             Nos services
           </Typography>
 
-          {!isMobile ? (
+          {servicesLoading && (
+            <Box display="flex" justifyContent="center" py={4}>
+              <CircularProgress />
+            </Box>
+          )}
+
+          {servicesError && (
+            <Alert severity="error" sx={{ mb: 4 }}>
+              Erreur lors du chargement des services: {servicesError.message}
+            </Alert>
+          )}
+
+          {!servicesLoading && !servicesError && servicesList.length === 0 && (
+            <Typography align="center" color="text.secondary">
+              Aucun service disponible pour le moment.
+            </Typography>
+          )}
+
+          {/* Desktop Layout */}
+          {!isMobile && !servicesLoading && !servicesError && servicesList.length > 0 && (
             <Box sx={{ position: 'relative' }}>
-              <Box
-                ref={scrollRef}
-                sx={{
-                  display: 'flex',
-                  overflowX: 'auto',
-                  scrollBehavior: 'smooth',
-                  gap: 3,
-                  pb: 1,
-                  '&::-webkit-scrollbar': { display: 'none' },
-                  msOverflowStyle: 'none',
-                  scrollbarWidth: 'none',
-                }}
-              >
-                {services.map((service) => (
-                  <Paper
-                    key={service.id}
-                    sx={{
-                      flex: '0 0 auto',
-                      width: CARD_WIDTH,
-                      p: 3,
-                      borderRadius: 3,
-                      boxShadow: 3,
-                      bgcolor: 'background.default',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'space-between',
-                      '&:hover': { boxShadow: 6 },
-                    }}
-                    onClick={() => onNavigate('serviceDetails', { serviceId: service.id })}
-                    tabIndex={0}
-                  >
-                    <Chip
-                      label={
-                        service.category.charAt(0).toUpperCase() +
-                        service.category.slice(1)
-                      }
-                      size="small"
-                      color={
-                        {
-                          coaching: 'secondary',
-                          formation: 'success',
-                          mediation: 'warning',
-                          facilitation: 'info',
-                          art: 'error',
-                        }[service.category] || 'default'
-                      }
-                      sx={{ mb: 1, alignSelf: 'flex-start' }}
-                    />
-                    <Typography variant="h6" fontWeight="bold" gutterBottom>
-                      {service.title}
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{ flexGrow: 1, mb: 1 }}
-                    >
-                      {service.description.length > 120
-                        ? service.description.slice(0, 120) + '...'
-                        : service.description}
-                    </Typography>
+              <Box ref={scrollRef} sx={{ display: 'flex', overflowX: 'auto', scrollBehavior: 'smooth', gap: 3, pb: 1, '&::-webkit-scrollbar': { display: 'none' }, msOverflowStyle: 'none', scrollbarWidth: 'none' }}>
+                {servicesList.map((service) => (
+                  <Paper key={service.id} sx={{ flex: '0 0 auto', width: CARD_WIDTH, p: 3, borderRadius: 3, boxShadow: 3, bgcolor: 'background.default', cursor: 'pointer', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', '&:hover': { boxShadow: 6 } }} onClick={() => onNavigate('serviceDetails', { serviceId: service.id })} tabIndex={0}>
+                    <Chip label={service.category.charAt(0).toUpperCase() + service.category.slice(1)} size="small" color={{ coaching: 'secondary', formation: 'success', mediation: 'warning', facilitation: 'info', art: 'error' }[service.category] || 'default'} sx={{ mb: 1, alignSelf: 'flex-start' }} />
+                    <Typography variant="h6" fontWeight="bold" gutterBottom>{service.title}</Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ flexGrow: 1, mb: 1 }}>{service.description.length > 120 ? service.description.slice(0, 120) + '...' : service.description}</Typography>
                     <Stack direction="row" spacing={1} mb={1} flexWrap="wrap">
                       {service.targetAudience.slice(0, 3).map((aud, i) => (
-                        <Chip
-                          key={i}
-                          label={aud}
-                          size="small"
-                          variant="outlined"
-                          sx={{ fontSize: 11 }}
-                        />
+                        <Chip key={i} label={aud} size="small" variant="outlined" sx={{ fontSize: 11 }} />
                       ))}
                     </Stack>
-                    <Typography
-                      variant="caption"
-                      color="text.secondary"
-                      sx={{ mb: 2, fontWeight: '600' }}
-                    >
-                      {service.pricing}
-                    </Typography>
-                    <Button
-                      size="small"
-                      endIcon={<ArrowRight size={16} />}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onNavigate('serviceDetails', { serviceId: service.id });
-                      }}
-                    >
+                    <Typography variant="caption" color="text.secondary" sx={{ mb: 2, fontWeight: '600' }}>{service.pricing}€/séance</Typography>
+                    <Button size="small" endIcon={<ArrowRight size={16} />} onClick={(e) => { e.stopPropagation(); onNavigate('serviceDetails', { serviceId: service.id }); }}>
                       En savoir plus
                     </Button>
                   </Paper>
                 ))}
               </Box>
-
-              <IconButton
-                onClick={scrollLeft}
-                aria-label="Scroll services left"
-                sx={{
-                  position: 'absolute',
-                  top: '50%',
-                  left: -40,
-                  transform: 'translateY(-50%)',
-                  bgcolor: 'background.paper',
-                  boxShadow: 2,
-                  '&:hover': { bgcolor: 'background.default' },
-                }}
-              >
+              <IconButton onClick={scrollLeft} sx={{ position: 'absolute', top: '50%', left: -40, transform: 'translateY(-50%)', bgcolor: 'background.paper', boxShadow: 2 }}>
                 <ChevronLeft />
               </IconButton>
-              <IconButton
-                onClick={scrollRight}
-                aria-label="Scroll services right"
-                sx={{
-                  position: 'absolute',
-                  top: '50%',
-                  right: -40,
-                  transform: 'translateY(-50%)',
-                  bgcolor: 'background.paper',
-                  boxShadow: 2,
-                  '&:hover': { bgcolor: 'background.default' },
-                }}
-              >
+              <IconButton onClick={scrollRight} sx={{ position: 'absolute', top: '50%', right: -40, transform: 'translateY(-50%)', bgcolor: 'background.paper', boxShadow: 2 }}>
                 <ChevronRight />
               </IconButton>
             </Box>
-          ) : (
-            <Box>
-              <Stack spacing={3}>
-                {services.slice(0, 3).map((service) => (
-                  <Paper
-                    key={service.id}
-                    sx={{ p: 2, borderRadius: 2, boxShadow: 2 }}
-                    onClick={() => onNavigate('serviceDetails', { serviceId: service.id })}
-                    tabIndex={0}
-                  >
-                    <Chip
-                      label={
-                        service.category.charAt(0).toUpperCase() +
-                        service.category.slice(1)
-                      }
-                      size="small"
-                      color={
-                        {
-                          coaching: 'secondary',
-                          formation: 'success',
-                          mediation: 'warning',
-                          facilitation: 'info',
-                          art: 'error',
-                        }[service.category] || 'default'
-                      }
-                      sx={{ mb: 1, alignSelf: 'flex-start' }}
-                    />
-                    <Typography variant="h6" fontWeight="bold" gutterBottom>
-                      {service.title}
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{ mb: 1 }}
-                    >
-                      {service.description.length > 100
-                        ? service.description.slice(0, 100) + '...'
-                        : service.description}
-                    </Typography>
-                    <Stack direction="row" spacing={1} mb={1} flexWrap="wrap">
-                      {service.targetAudience.slice(0, 3).map((aud, i) => (
-                        <Chip
-                          key={i}
-                          label={aud}
-                          size="small"
-                          variant="outlined"
-                          sx={{ fontSize: 11 }}
-                        />
-                      ))}
-                    </Stack>
-                    <Typography
-                      variant="caption"
-                      color="text.secondary"
-                      sx={{ mb: 1, fontWeight: '600' }}
-                    >
-                      {service.pricing}
-                    </Typography>
-                    <Button
-                      size="small"
-                      endIcon={<ArrowRight size={16} />}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onNavigate('serviceDetails', { serviceId: service.id });
-                      }}
-                    >
-                      En savoir plus
-                    </Button>
-                  </Paper>
-                ))}
-              </Stack>
-            </Box>
+          )}
+
+          {/* Mobile Layout */}
+          {isMobile && !servicesLoading && !servicesError && servicesList.length > 0 && (
+            <Stack spacing={3}>
+              {servicesList.slice(0, 3).map((service) => (
+                <Paper key={service.id} sx={{ p: 2, borderRadius: 2, boxShadow: 2 }} onClick={() => onNavigate('serviceDetails', { serviceId: service.id })} tabIndex={0}>
+                  <Chip label={service.category.charAt(0).toUpperCase() + service.category.slice(1)} size="small" color={{ coaching: 'secondary', formation: 'success', mediation: 'warning', facilitation: 'info', art: 'error' }[service.category] || 'default'} sx={{ mb: 1 }} />
+                  <Typography variant="h6" fontWeight="bold" gutterBottom>{service.title}</Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>{service.description.length > 100 ? service.description.slice(0, 100) + '...' : service.description}</Typography>
+                  <Stack direction="row" spacing={1} mb={1} flexWrap="wrap">
+                    {service.targetAudience.slice(0, 3).map((aud, i) => (
+                      <Chip key={i} label={aud} size="small" variant="outlined" sx={{ fontSize: 11 }} />
+                    ))}
+                  </Stack>
+                  <Typography variant="caption" color="text.secondary" sx={{ mb: 1, fontWeight: '600' }}>{service.pricing}€/séance</Typography>
+                  <Button size="small" endIcon={<ArrowRight size={16} />} onClick={(e) => { e.stopPropagation(); onNavigate('serviceDetails', { serviceId: service.id }); }}>
+                    En savoir plus
+                  </Button>
+                </Paper>
+              ))}
+            </Stack>
           )}
         </Container>
       </Box>
@@ -452,88 +265,33 @@ const HomePage = ({ onNavigate }) => {
       {/* Latest News Section */}
       <Box sx={{ py: { xs: 6, md: 10 }, bgcolor: 'background.paper' }}>
         <Container maxWidth="lg">
-          <Typography
-            variant="h4"
-            fontWeight="bold"
-            gutterBottom
-            textAlign="center"
-            sx={{ mb: 6 }}
-          >
+          <Typography variant="h4" fontWeight="bold" gutterBottom textAlign="center" sx={{ mb: 6 }}>
             Actualités récentes
           </Typography>
-
-          {loading && (
-            <Typography align="center" sx={{ mb: 4 }}>
-              Chargement des actualités...
-            </Typography>
-          )}
-          {error && (
-            <Typography color="error" align="center" sx={{ mb: 4 }}>
-              Erreur lors du chargement des actualités.
-            </Typography>
-          )}
-
-          {!loading && !error && data?.newsList?.length === 0 && (
-            <Typography align="center" sx={{ mb: 4 }}>
-              Aucune actualité disponible pour le moment.
-            </Typography>
-          )}
-
-          {!loading && !error && data?.newsList?.length > 0 && (
+          {newsLoading && <Typography align="center">Chargement des actualités...</Typography>}
+          {newsError && <Typography color="error" align="center">Erreur lors du chargement des actualités.</Typography>}
+          {!newsLoading && !newsError && newsData?.newsList?.length === 0 && <Typography align="center">Aucune actualité disponible.</Typography>}
+          {!newsLoading && !newsError && newsData?.newsList?.length > 0 && (
             <Grid container spacing={4} justifyContent="center">
-              {data.newsList.map(({ id, title, description, date }) => (
+              {newsData.newsList.map(({ id, title, description, date }) => (
                 <Grid item xs={12} sm={6} md={4} key={id}>
-                  <Paper
-                    sx={{
-                      p: 3,
-                      borderRadius: 3,
-                      boxShadow: 3,
-                      cursor: 'pointer',
-                      height: '100%',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'space-between',
-                      '&:hover': { boxShadow: 6 },
-                    }}
-                    onClick={() => onNavigate('blogPost', { postId: id })}
-                    tabIndex={0}
-                  >
-                    <Typography
-                      variant="subtitle2"
-                      color="primary"
-                      fontWeight="600"
-                      sx={{ mb: 1 }}
-                    >
-                         {(() => {
-                          const parsedDate = parseFrenchDate(date);
-                          if (!parsedDate || isNaN(parsedDate)) return date;
-                          return parsedDate.toLocaleDateString('fr-FR', {
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric',
-                          });
-                        })()}
+                  <Paper sx={{ p: 3, borderRadius: 3, boxShadow: 3, cursor: 'pointer', height: '100%', '&:hover': { boxShadow: 6 } }} onClick={() => onNavigate('blogPost', { postId: id })}>
+                    <Typography variant="subtitle2" color="primary" fontWeight="600" sx={{ mb: 1 }}>
+                      {(() => {
+                        const parsedDate = parseFrenchDate(date);
+                        if (!parsedDate || isNaN(parsedDate)) return date;
+                        return parsedDate.toLocaleDateString('fr-FR', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric',
+                        });
+                      })()}
                     </Typography>
-                    <Typography variant="h6" fontWeight="bold" gutterBottom>
-                      {title}
+                    <Typography variant="h6" fontWeight="bold" gutterBottom>{title}</Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ flexGrow: 1, mb: 2 }}>
+                      {description.length > 120 ? description.slice(0, 120) + '...' : description}
                     </Typography>
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{ flexGrow: 1, mb: 2 }}
-                    >
-                      {description.length > 120
-                        ? description.slice(0, 120) + '...'
-                        : description}
-                    </Typography>
-                    <Button
-                      size="small"
-                      endIcon={<ArrowRight size={16} />}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onNavigate('blogPost', { postId: id });
-                      }}
-                    >
+                    <Button size="small" endIcon={<ArrowRight size={16} />} onClick={(e) => { e.stopPropagation(); onNavigate('blogPost', { postId: id }); }}>
                       Lire la suite
                     </Button>
                   </Paper>
@@ -545,93 +303,41 @@ const HomePage = ({ onNavigate }) => {
       </Box>
 
       {/* Testimonials Section */}
-     <Box sx={{ position: 'relative', width: '100%', px: 2 }}>
-      {/* Left Arrow */}
-      <IconButton
-        onClick={handleLeftClick}
-        disabled={!canGoLeft}
-        sx={{
-          position: 'absolute',
-          top: '50%',
-          left: 0,
-          transform: 'translateY(-50%)',
-          zIndex: 10,
-        }}
-        aria-label="Previous testimonials"
-      >
-        <ChevronLeft fontSize="large" />
-      </IconButton>
-
-      {/* Right Arrow */}
-      <IconButton
-        onClick={handleRightClick}
-        disabled={!canGoRight}
-        sx={{
-          position: 'absolute',
-          top: '50%',
-          right: 0,
-          transform: 'translateY(-50%)',
-          zIndex: 10,
-        }}
-        aria-label="Next testimonials"
-      >
-        <ChevronRight fontSize="large" />
-      </IconButton>
-
-      <Grid container spacing={4} justifyContent="center">
-        {visibleTestimonials.map(({ id, name, role, organization, content, rating }) => (
-          <Grid item xs={12} sm={6} md={4} key={id}>
-            <Paper
-              sx={{
-                p: 3,
-                borderRadius: 3,
-                boxShadow: 3,
-                height: '100%',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between',
-                '&:hover': { boxShadow: 6 },
-              }}
-            >
-              <Typography variant="body1" sx={{ mb: 2, fontStyle: 'italic' }}>
-                “{content}”
-              </Typography>
-
-              {/* Rating stars */}
-              <Box sx={{ mb: 1 }}>
-                {[...Array(5)].map((_, i) => (
-                  <StarIcon
-                    key={i}
-                    fontSize="small"
-                    color={i < rating ? 'primary' : 'disabled'}
-                    sx={{ mr: 0.5 }}
-                  />
-                ))}
-              </Box>
-
-              <Typography
-                variant="subtitle2"
-                fontWeight="600"
-                color="text.secondary"
-                align="right"
-              >
-                - {name}, {role} @ {organization}
-              </Typography>
-            </Paper>
+      <Box sx={{ position: 'relative', width: '100%', px: 2 }}>
+        <IconButton onClick={handleLeftClick} disabled={!canGoLeft} sx={{ position: 'absolute', top: '50%', left: 0, transform: 'translateY(-50%)', zIndex: 10 }}>
+          <ChevronLeft fontSize="large" />
+        </IconButton>
+        <IconButton onClick={handleRightClick} disabled={!canGoRight} sx={{ position: 'absolute', top: '50%', right: 0, transform: 'translateY(-50%)', zIndex: 10 }}>
+          <ChevronRight fontSize="large" />
+        </IconButton>
+        <Container maxWidth="lg">
+          <Typography variant="h4" fontWeight="bold" textAlign="center" sx={{ mb: 6 }}>
+            Témoignages
+          </Typography>
+          {testimonialsLoading && <Typography align="center">Chargement des témoignages...</Typography>}
+          {testimonialsError && <Typography align="center" color="error">Erreur lors du chargement.</Typography>}
+          <Grid container spacing={4} justifyContent="center">
+            {visibleTestimonials.map(({ id, name, role, organization, quote, rating }) => (
+              <Grid item xs={12} sm={6} md={4} key={id}>
+                <Paper sx={{ p: 3, borderRadius: 3, boxShadow: 3, height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', '&:hover': { boxShadow: 6 } }}>
+                  <Typography variant="body1" sx={{ mb: 2, fontStyle: 'italic' }}>“{quote}”</Typography>
+                  <Box sx={{ mb: 1 }}>
+                    {[...Array(5)].map((_, i) => (
+                      <StarIcon key={i} fontSize="small" color={i < rating ? 'primary' : 'disabled'} sx={{ mr: 0.5 }} />
+                    ))}
+                  </Box>
+                  <Typography variant="subtitle2" fontWeight="600" color="text.secondary" align="right">
+                    - {name}, {role} @ {organization}
+                  </Typography>
+                </Paper>
+              </Grid>
+            ))}
           </Grid>
-        ))}
-      </Grid>
-    </Box>
+        </Container>
+      </Box>
 
       {/* Call to Action Section */}
-      <Box
-        sx={{
-          py: 8,
-          bgcolor: 'primary.main',
-          color: 'primary.contrastText',
-          textAlign: 'center',
-        }}
-      >
+      <Box sx={{ py: 8, bgcolor: 'primary.main', color: 'primary.contrastText', textAlign: 'center' }}>
         <Container maxWidth="md">
           <Typography variant="h4" fontWeight="bold" gutterBottom>
             Prêt à passer à l'action ?
@@ -639,11 +345,7 @@ const HomePage = ({ onNavigate }) => {
           <Typography variant="h6" sx={{ mb: 4 }}>
             Contactez-nous pour un accompagnement personnalisé.
           </Typography>
-          <Button
-            variant="contained"
-            size="large"
-            onClick={() => onNavigate('contact')}
-          >
+          <Button variant="contained" size="large" onClick={() => onNavigate('contact')}>
             Contactez-nous
           </Button>
         </Container>

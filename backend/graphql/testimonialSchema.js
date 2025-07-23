@@ -7,7 +7,8 @@ module.exports = gql`
     role: String
     organization: String
     quote: String!
-    typeDePrestation: String
+    serviceCategory: String!
+    rating: Int!
   }
 
   input TestimonialInput {
@@ -15,7 +16,8 @@ module.exports = gql`
     role: String
     organization: String
     quote: String!
-    typeDePrestation: String
+    serviceCategory: String!
+    rating: Int!
   }
 
   extend type Query {
