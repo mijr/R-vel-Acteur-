@@ -6,6 +6,8 @@ const { Op } = require('sequelize');
 require('dotenv').config();
 
 const sendEmail = require('../../utils/sendEmail');
+const sendSms = require('../../utils/sendSms');
+
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
 const generateToken = (user) =>
   jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '7d' });
@@ -24,12 +26,13 @@ module.exports = {
   },
 
   Mutation: {
-    signup: async (_, { email, password, firstName, lastName }) => {
+    signup: async (_, { email, password, firstName, lastName, phone }) => {
       const hashed = await bcrypt.hash(password, 10);
-      const user = await User.create({ email, password: hashed, firstName, lastName });
+      const user = await User.create({ email, password: hashed, firstName, lastName, phone });
       const token = generateToken(user);
       return { token, user };
     },
+
     login: async (_, { email, password }) => {
       const user = await User.findOne({ where: { email } });
       if (!user || !(await bcrypt.compare(password, user.password))) {
@@ -38,27 +41,48 @@ module.exports = {
       const token = generateToken(user);
       return { token, user };
     },
- requestPasswordReset: async (_, { email }) => {
-  const user = await User.findOne({ where: { email } });
-  if (!user) throw new Error("User not found");
+    requestPasswordReset: async (_, { email }) => {
+      const user = await User.findOne({ where: { email } });
+      if (!user) throw new Error("User not found");
 
-  const otpCode = generateOTP();
-  const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 min expiry
+      const otpCode = generateOTP();
+      const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 min expiry
 
-  user.otpCode = otpCode;
-  user.otpExpiry = otpExpiry;
-  await user.save();
+      user.otpCode = otpCode;
+      user.otpExpiry = otpExpiry;
+      await user.save();
 
-  const subject = "Password Reset Request";
-  const html = `<p>Your OTP code is <strong>${otpCode}</strong>. It expires in 10 minutes.</p>`;
+      const subject = "Password Reset Request";
+      const html = `
+        <div style="font-family: Arial, sans-serif; font-size: 16px; color: #333;">
+          <h2>Password Reset Request</h2>
+          <p>Hello ${user.firstName || ''},</p>
+          <p>Your password reset OTP code is:</p>
+          <p style="font-size: 24px; font-weight: bold; letter-spacing: 4px;">${otpCode}</p>
+          <p>This code will expire in 10 minutes.</p>
+          <p>If you did not request a password reset, please ignore this email.</p>
+        </div>`;
 
-  try {
-    await sendEmail(user.email, subject, html);
-    return true;
-  } catch (e) {
-    throw new Error("Échec de l'envoi de l'email : Failed to send email");
-  }
-},
+      // Send OTP SMS message
+      const smsMessage = `Your password reset OTP code is: ${otpCode}. It expires in 10 minutes.`;
+
+      try {
+        await sendEmail(user.email, subject, html);
+
+        // Only send SMS if user has a phone number
+        if (user.phone) {
+          await sendSms(user.phone, smsMessage);
+        } else {
+          console.warn('User has no phone number, skipping SMS sending.');
+        }
+
+        return true;
+      } catch (e) {
+        console.error('Error sending OTP via email or SMS:', e);
+        throw new Error("Failed to send OTP via email or SMS");
+      }
+    },
+
     resetPasswordWithOTP: async (_, { email, otpCode, newPassword }) => {
       const user = await User.findOne({ where: { email } });
 

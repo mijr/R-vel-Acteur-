@@ -13,16 +13,16 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       defaultValue: 'user',
     },
-    firstName: {
+    firstName: DataTypes.STRING,
+    lastName: DataTypes.STRING,
+    phone: {
       type: DataTypes.STRING,
-    },
-    lastName: {
-      type: DataTypes.STRING,
+      allowNull: true,
+      unique: true
     },
     resetToken: DataTypes.STRING,
     resetTokenExpiry: DataTypes.DATE,
     otpCode: DataTypes.STRING,
     otpExpiry: DataTypes.DATE,
-
   });
 };

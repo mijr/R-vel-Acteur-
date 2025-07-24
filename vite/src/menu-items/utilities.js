@@ -7,7 +7,9 @@ import {
   IconUsers,
   IconWindmill,
   IconNews,
-  IconCalendarStats 
+  IconCalendarStats,
+  IconTools 
+
 } from '@tabler/icons-react';
 
 
@@ -20,7 +22,9 @@ const icons = {
   IconShadow,
   IconNews, // ← ce champ doit être présent 
   IconWindmill,
-  IconUsers // ← ce champ doit être présent
+  IconUsers,
+  IconTools 
+
 };
 
 
@@ -28,9 +32,17 @@ const icons = {
 
 const utilities = {
   id: 'utilities',
-  title: 'Utilities',
+  title: 'Utilite',
   type: 'group',
   children: [
+    {
+      id: 'util-services',
+      title: 'Services',
+      type: 'item',
+      url: '/services',
+      icon: icons.IconTools,
+      breadcrumbs: false
+    },
     {
       id: 'view-appointments',
       title: 'Mes rendez-vous',

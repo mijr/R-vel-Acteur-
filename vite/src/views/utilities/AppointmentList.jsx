@@ -57,16 +57,17 @@ export default function AppointmentList() {
   }, []);
 
   // Delete handler for attendees
-  const handleDeleteAttendee = async (id) => {
-    if (!window.confirm('Supprimer cet invité ?')) return;
-    try {
-      await axios.delete(`/api/attendees/${id}`);
-      setAttendees(prev => prev.filter(attendee => attendee.id !== id));
-    } catch (err) {
-      console.error('Delete attendee failed:', err);
-      alert('Erreur lors de la suppression de l\'invité');
-    }
-  };
+    const handleDeleteAttendee = async (id) => {
+      if (!window.confirm('Supprimer cet invité ?')) return;
+      try {
+        await axios.delete(`/api/attendees/${id}`);
+        setAttendees(prev => prev.filter(attendee => attendee.id !== id));
+      } catch (err) {
+        console.error('Delete attendee failed:', err);
+        alert('Erreur lors de la suppression de l\'invité');
+      }
+    };
+
 
   // Edit handler for attendees
   const handleEditAttendee = (attendee) => {

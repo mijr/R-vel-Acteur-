@@ -1,20 +1,27 @@
-const sgMail = require('@sendgrid/mail');
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+const nodemailer = require('nodemailer');
+
+const transporter = nodemailer.createTransport({
+  host: 'smtp.sendgrid.net',
+  port: 587,
+  auth: {
+    user: 'apikey', // This is literally the string 'apikey'
+    pass: process.env.SENDGRID_API_KEY, // Your SendGrid API key
+  },
+});
 
 const sendEmail = async (to, subject, html) => {
-  try {
-    const msg = {
-      to,
-      from: 'savanafusion@gmail.com', 
-      subject,
-      html
-    };
+  const mailOptions = {
+    from: 'savanafusion@gmail.com', // Must be verified in SendGrid
+    to,
+    subject,
+    html,
+  };
 
-    await sgMail.send(msg);
+  try {
+    await transporter.sendMail(mailOptions);
   } catch (err) {
-    console.error('❌ SendGrid error:', err.response?.body || err.message);
-    console.error('Full error:', err);
-    throw new Error("Échec de l'envoi de l'email : Failed to send email");
+    console.error('❌ SMTP SendGrid error:', err);
+    throw new Error('Failed to send email via SMTP');
   }
 };
 

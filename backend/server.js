@@ -59,32 +59,41 @@ app.get('/api/attendees', async (req, res) => {
 });
 
 // ─── Cal.com v2: Delete Attendee ─────────────────────────────────
+// DELETE /api/attendees/:id
 app.delete('/api/attendees/:id', async (req, res) => {
   const { id } = req.params;
   const key = process.env.CAL_API_KEY;
 
-  if (!key) return res.status(500).json({ error: 'Missing API key' });
+  console.log('[DELETE] Attendee ID:', id);
+  console.log('[DELETE] API Key:', key); // 👈 add this
+
+  if (!key) {
+    console.error('❌ CAL_API_KEY is missing');
+    return res.status(500).json({ error: 'Server misconfiguration: API key missing' });
+  }
 
   try {
-    const response = await fetch(`https://api.cal.com/v1/attendees/${id}`, {
+    const calRes = await fetch(`https://api.cal.com/v1/attendees/${id}`, {
       method: 'DELETE',
       headers: {
-        Authorization: `Bearer ${key}`,
+        'Authorization': `Bearer ${key}`,
         'cal-api-version': '2024-08-13'
       }
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      return res.status(400).json({ error: 'Failed to delete attendee', details: errorText });
+    if (!calRes.ok) {
+      const errorBody = await calRes.text();
+      return res.status(500).json({ error: 'Failed to delete from Cal', details: errorBody });
     }
 
-    res.json({ message: `Attendee ${id} deleted successfully.` });
+    res.status(204).send();
   } catch (err) {
-    console.error('Delete attendee error:', err);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Delete attendee failed', details: err.message });
   }
 });
+
+
+
 
 // ─── Cal.com v2: Update Attendee ─────────────────────────────────
 app.patch('/api/attendees/:id', async (req, res) => {

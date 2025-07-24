@@ -1,62 +1,64 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 
-// material-ui imports
+// material-ui
 import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
-import Avatar from '@mui/material/Avatar';
-import Button from '@mui/material/Button';
-import CardActions from '@mui/material/CardActions';
-import Chip from '@mui/material/Chip';
-import ClickAwayListener from '@mui/material/ClickAwayListener';
-import Divider from '@mui/material/Divider';
-import Grid from '@mui/material/Grid';
-import Paper from '@mui/material/Paper';
-import Popper from '@mui/material/Popper';
-import Stack from '@mui/material/Stack';
-import TextField from '@mui/material/TextField';
-import Typography from '@mui/material/Typography';
-import Box from '@mui/material/Box';
+import {
+  Avatar,
+  Button,
+  CardActions,
+  Chip,
+  ClickAwayListener,
+  Divider,
+  Grid,
+  Paper,
+  Popper,
+  Stack,
+  Typography,
+  Box
+} from '@mui/material';
 
 // project imports
 import MainCard from 'ui-component/cards/MainCard';
 import Transitions from 'ui-component/extended/Transitions';
-import NotificationList from './NotificationList'; // Make sure it accepts notifications & onMarkAsRead props
+import NotificationList from './NotificationList'; // Ensure it accepts props
+import { LOCAL_STORAGE_KEY } from '../../../../constants/storageKeys'; // Adjust the import path as necessary
 
 import { IconBell } from '@tabler/icons-react';
 
-const status = [
-  { value: 'all', label: 'All Notification' },
-  { value: 'new', label: 'New' },
-  { value: 'unread', label: 'Unread' },
-  { value: 'other', label: 'Other' }
-];
-
 const CAL_API_URL = 'https://api.cal.com/v1/attendees?apiKey=cal_live_8aee1aa2c48670ea92d8fe14fcb4d077';
 const FETCH_INTERVAL_MS = 60000; // 1 minute
+
+// Helper functions for read state persistence
+const getReadIds = () => {
+  try {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
+    return stored ? JSON.parse(stored) : [];
+  } catch {
+    return [];
+  }
+};
+
+const saveReadIds = (ids) => {
+  localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(ids));
+};
 
 export default function NotificationSection() {
   const theme = useTheme();
   const downMD = useMediaQuery(theme.breakpoints.down('md'));
 
   const [open, setOpen] = useState(false);
-  const [value, setValue] = useState('');
-  const [notifications, setNotifications] = useState([]); // Notifications array
-
+  const [notifications, setNotifications] = useState([]);
   const anchorRef = useRef(null);
+  const prevOpen = useRef(open);
 
-  const handleToggle = () => {
-    setOpen((prevOpen) => !prevOpen);
-  };
-
+  const handleToggle = () => setOpen((prevOpen) => !prevOpen);
   const handleClose = (event) => {
-    if (anchorRef.current && anchorRef.current.contains(event.target)) {
-      return;
-    }
+    if (anchorRef.current && anchorRef.current.contains(event.target)) return;
     setOpen(false);
   };
 
-  const prevOpen = useRef(open);
   useEffect(() => {
     if (prevOpen.current === true && open === false) {
       anchorRef.current.focus();
@@ -64,45 +66,60 @@ export default function NotificationSection() {
     prevOpen.current = open;
   }, [open]);
 
-  const handleChange = (event) => {
-    setValue(event?.target.value || '');
-  };
-
-  // Fetch attendees and add new as notifications
+  // Fetch attendees from Cal.com and update notifications
   const fetchAttendees = async () => {
     try {
-      const response = await fetch(CAL_API_URL, { method: 'GET' });
+      const response = await fetch(CAL_API_URL);
       const data = await response.json();
       if (!data.attendees) return;
 
       const knownIds = notifications.map((n) => n.id);
-      const newAttendees = data.attendees.filter((att) => !knownIds.includes(att.id));
+      const readIds = getReadIds();
 
+      const newAttendees = data.attendees.filter((att) => !knownIds.includes(att.id));
       if (newAttendees.length > 0) {
         const newNotifications = newAttendees.map((att) => ({
           id: att.id,
           title: `Nouvel inscrit : ${att.name}`,
           description: `Email: ${att.email}`,
           time: new Date().toLocaleString(),
-          read: false
+          read: readIds.includes(att.id)
         }));
         setNotifications((prev) => [...newNotifications, ...prev]);
       }
     } catch (err) {
-      console.error('Erreur fetch attendees:', err);
+      console.error('Erreur lors de la récupération des inscrits:', err);
     }
   };
 
+  // Load from localStorage on first mount
   useEffect(() => {
+    const readIds = getReadIds();
+    setNotifications((prev) =>
+      prev.map((n) => ({
+        ...n,
+        read: readIds.includes(n.id)
+      }))
+    );
     fetchAttendees(); // initial fetch
     const intervalId = setInterval(fetchAttendees, FETCH_INTERVAL_MS);
     return () => clearInterval(intervalId);
   }, []);
 
   const markAsRead = (id) => {
+    const readIds = getReadIds();
+    if (!readIds.includes(id)) {
+      saveReadIds([...readIds, id]);
+    }
     setNotifications((prev) =>
       prev.map((notif) => (notif.id === id ? { ...notif, read: true } : notif))
     );
+  };
+
+  const markAllAsRead = () => {
+    const allIds = notifications.map((n) => n.id);
+    saveReadIds([...new Set([...getReadIds(), ...allIds])]);
+    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
   };
 
   const unreadCount = notifications.filter((n) => !n.read).length;
@@ -188,14 +205,13 @@ export default function NotificationSection() {
                           </Grid>
                           <Grid>
                             <Typography
-                              component={Link}
-                              to="#"
+                              component="span"
                               variant="subtitle2"
                               color="primary"
-                              onClick={() => setNotifications((prev) => prev.map((n) => ({ ...n, read: true })))}
+                              onClick={markAllAsRead}
                               sx={{ cursor: 'pointer' }}
                             >
-                              Mark all as read
+                              Tout marquer comme lu
                             </Typography>
                           </Grid>
                         </Grid>
@@ -215,8 +231,8 @@ export default function NotificationSection() {
                       </Grid>
                     </Grid>
                     <CardActions sx={{ p: 1.25, justifyContent: 'center' }}>
-                      <Button size="small" disableElevation>
-                        View All
+                      <Button size="small" disableElevation component={Link} to="/notifications">
+                        Voir tout
                       </Button>
                     </CardActions>
                   </MainCard>

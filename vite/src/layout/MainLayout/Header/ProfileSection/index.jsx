@@ -37,6 +37,11 @@ export default function ProfileSection() {
   const { data, loading, error } = useQuery(GET_ME);
   const user = data?.me;
 
+ const token = localStorage.getItem('token');
+console.log('User token from localStorage:', token);
+
+
+
   const handleToggle = () => {
     setOpen((prevOpen) => !prevOpen);
   };

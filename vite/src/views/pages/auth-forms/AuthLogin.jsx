@@ -38,24 +38,30 @@ export default function AuthLogin() {
   const [login] = useMutation(LOGIN_MUTATION);
 
   const handleLogin = async () => {
-    try {
-      const { data } = await login({ variables: { email, password } });
-      localStorage.setItem('token', data.login.token);
-      Swal.fire({
-        icon: 'success',
-        title: 'Connexion réussie',
-        text: `Bienvenue ${data.login.user.firstName || ''} !`
-      }).then(() => {
-        navigate('/dashboard/default');
-      });
-    } catch (err) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Erreur de connexion',
-        text: err.message || 'Identifiants incorrects',
-      });
-    }
-  };
+  try {
+    const { data } = await login({ variables: { email, password } });
+
+    // Store token and user info
+    localStorage.setItem('token', data.login.token);
+    localStorage.setItem('user', JSON.stringify(data.login.user));
+
+    // Success feedback
+    Swal.fire({
+      icon: 'success',
+      title: 'Connexion réussie',
+      text: `Bienvenue ${data.login.user.firstName || ''} !`
+    }).then(() => {
+      navigate('/dashboard/default');
+    });
+  } catch (err) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Erreur de connexion',
+      text: err.message || 'Identifiants incorrects',
+    });
+  }
+};
+
 
   return (
     <>

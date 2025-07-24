@@ -28,9 +28,11 @@ const GET_USERS = gql`
       firstName
       lastName
       role
+      phone
     }
   }
 `;
+
 
 const UPDATE_USER = gql`
   mutation UpdateUser($id: ID!, $input: UpdateUserInput!) {
@@ -40,6 +42,7 @@ const UPDATE_USER = gql`
       firstName
       lastName
       role
+      phone
     }
   }
 `;
@@ -63,23 +66,27 @@ export default function UserProfileCard({ isAdmin }) {
     firstName: '',
     lastName: '',
     email: '',
-    role: ''
+    role: '',
+    phone: ''
   });
+
   const [deleteConfirm, setDeleteConfirm] = useState(null);
 
   if (loading) return <CircularProgress />;
   if (error) return <Typography color="error">Erreur : {error.message}</Typography>;
 
   const users = data.users;
-   
+   console.log('Fetched users:', users);
   const openModal = (user) => {
     setSelectedUser(user);
     setForm({
       firstName: user.firstName,
       lastName: user.lastName,
       email: user.email,
-      role: user.role
+      role: user.role,
+      phone: user.phone || ''
     });
+
     setModalOpen(true);
   };
 
@@ -144,6 +151,11 @@ export default function UserProfileCard({ isAdmin }) {
               <Typography variant="subtitle2" color="textSecondary">Rôle</Typography>
               <Typography variant="body1" sx={{ textTransform: 'capitalize' }}>{user.role}</Typography>
             </Grid>
+            <Grid item xs={12} sm={2}>
+              <Typography variant="subtitle2" color="textSecondary">Téléphone</Typography>
+              <Typography variant="body1">{user.phone || '-'}</Typography>
+            </Grid>
+
 
             
               <Grid item xs={12} sm={4} sx={{ textAlign: 'right' }}>
@@ -198,6 +210,15 @@ export default function UserProfileCard({ isAdmin }) {
             type="email"
             fullWidth
             value={form.email}
+            onChange={handleChange}
+          />
+          <TextField
+            margin="dense"
+            label="Téléphone"
+            name="phone"
+            type="tel"
+            fullWidth
+            value={form.phone}
             onChange={handleChange}
           />
           <TextField

@@ -21,17 +21,31 @@ import VisibilityOff from '@mui/icons-material/VisibilityOff';
 
 // GraphQL mutation
 const SIGNUP = gql`
-  mutation Signup($email: String!, $password: String!, $firstName: String!, $lastName: String!) {
-    signup(email: $email, password: $password, firstName: $firstName, lastName: $lastName) {
+  mutation Signup(
+    $email: String!
+    $password: String!
+    $firstName: String!
+    $lastName: String!
+    $phone: String!
+  ) {
+    signup(
+      email: $email
+      password: $password
+      firstName: $firstName
+      lastName: $lastName
+      phone: $phone
+    ) {
       token
       user {
         id
         email
         role
+        phone
       }
     }
   }
 `;
+
 
 
 export default function AuthRegister() {
@@ -44,6 +58,8 @@ export default function AuthRegister() {
   const [lastName, setLastName] = useState();
   const [email, setEmail] = useState();
   const [password, setPassword] = useState();
+  const [phone, setPhone] = useState('');
+
 
   const [signup, { loading }] = useMutation(SIGNUP);
 
@@ -59,8 +75,9 @@ export default function AuthRegister() {
   const handleSubmit = async () => {
     try {
       const { data } = await signup({
-        variables: { email, password, firstName, lastName }
+        variables: { email, password, firstName, lastName, phone }
       });
+
 
       localStorage.setItem('token', data.signup.token);
 
@@ -117,6 +134,18 @@ export default function AuthRegister() {
             sx={{ ...theme.typography.customInput }}
           />
         </Grid>
+        <Grid item xs={12}>
+          <TextField
+            fullWidth
+            label="Phone Number"
+            name="phone"
+            type="tel"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            sx={{ ...theme.typography.customInput }}
+          />
+        </Grid>
+
       </Grid>
 
 

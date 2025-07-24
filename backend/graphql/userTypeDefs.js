@@ -7,6 +7,7 @@ const userTypeDefs = gql`
     role: String!
     firstName: String
     lastName: String
+    phone: String
   }
 `;
 
