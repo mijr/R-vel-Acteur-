@@ -11,10 +11,12 @@ import {
   Container,
   TextField,
   Alert,
+  CircularProgress,
 } from '@mui/material';
 import { useQuery, useMutation, gql } from '@apollo/client';
 import { ArrowLeft, DollarSign } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useGeoLocation } from '../constants/useGeoLocation';
 
 const GET_SERVICE = gql`
   query GetService($id: ID!) {
@@ -55,10 +57,13 @@ const APPLY_COUPON = gql`
         id
         title
       }
-      originalPrice
-      discountedPrice
-      currency
       appliedCoupon
+      prices {
+        region
+        originalPrice
+        discountedPrice
+        currency
+      }
     }
   }
 `;
@@ -67,6 +72,7 @@ const ServiceDetailPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { serviceId } = location.state || {};
+  const { location: geoLocation, isLoading: geoLoading, isError: geoError } = useGeoLocation();
 
   const { data, loading, error } = useQuery(GET_SERVICE, {
     variables: { id: serviceId },
@@ -85,13 +91,45 @@ const ServiceDetailPage = () => {
     setAppliedCouponData(null);
   }, [data?.service]);
 
-  if (loading) return <Typography>Chargement...</Typography>;
-  if (error) return <Typography>Erreur: {error.message}</Typography>;
-  if (!data?.service) return <Typography>Service introuvable</Typography>;
+  if (loading || geoLoading) return (
+    <Box display="flex" justifyContent="center" py={4}>
+      <CircularProgress />
+    </Box>
+  );
+
+  if (error) return <Alert severity="error" sx={{ m: 2 }}>Erreur: {error.message}</Alert>;
+  if (!data?.service) return <Alert severity="warning" sx={{ m: 2 }}>Service introuvable</Alert>;
 
   const service = data.service;
-  const userRegion = 'europe';
-  const geoPrice = service.pricing.find((p) => p.region === userRegion) || service.pricing[0];
+  
+  // Determine the best matching price based on geolocation
+  const getGeoPrice = () => {
+    if (!service.pricing || service.pricing.length === 0) return null;
+    
+    // Try to match by region name first
+    if (geoLocation?.regionName) {
+      const regionMatch = service.pricing.find(p => 
+        p.region.toLowerCase() === geoLocation.regionName.toLowerCase()
+      );
+      if (regionMatch) return regionMatch;
+    }
+    
+    // Try to match by country
+    if (geoLocation?.country) {
+      const countryMatch = service.pricing.find(p => 
+        p.region.toLowerCase() === geoLocation.country.toLowerCase()
+      );
+      if (countryMatch) return countryMatch;
+    }
+    
+    // Fallback to default/first pricing
+    return service.pricing[0];
+  };
+
+  const geoPrice = getGeoPrice();
+  const locationInfo = geoLocation?.city 
+    ? `${geoLocation.city}, ${geoLocation.regionName || geoLocation.country}`
+    : geoLocation?.regionName || geoLocation?.country || 'Votre région';
 
   const handleApplyCoupon = () => {
     if (!couponCode.trim()) return;
@@ -118,6 +156,12 @@ const ServiceDetailPage = () => {
         {service.title}
       </Typography>
 
+      {geoError && (
+        <Alert severity="warning" sx={{ mb: 3 }}>
+          Nous n'avons pas pu détecter votre région. Les prix affichés sont ceux par défaut.
+        </Alert>
+      )}
+
       <Grid container spacing={4}>
         <Grid item xs={12} md={8}>
           <Typography variant="h6" fontWeight="bold" gutterBottom>
@@ -133,18 +177,22 @@ const ServiceDetailPage = () => {
           <Typography variant="h6" fontWeight="bold" gutterBottom>
             Public cible
           </Typography>
-          <Stack direction="row" spacing={1} mb={4}>
+          <Stack direction="row" spacing={1} mb={4} flexWrap="wrap">
             {service.targetAudience.map((item) => (
-              <Chip key={item} label={item} />
+              <Chip key={item} label={item} sx={{ mb: 1 }} />
             ))}
           </Stack>
 
-          <Typography variant="h6" fontWeight="bold" gutterBottom>
-            Tarification ({geoPrice.region})
-          </Typography>
-          <Typography mb={4} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <DollarSign size={16} /> {geoPrice.amount} {geoPrice.currency}
-          </Typography>
+          {geoPrice && (
+            <>
+              <Typography variant="h6" fontWeight="bold" gutterBottom>
+                Tarification ({locationInfo})
+              </Typography>
+              <Typography mb={4} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <DollarSign size={16} /> {geoPrice.amount} {geoPrice.currency}
+              </Typography>
+            </>
+          )}
 
           {service.couponRules?.allowed && (
             <Box mt={6}>
@@ -171,10 +219,21 @@ const ServiceDetailPage = () => {
               {appliedCouponData && (
                 <Alert severity="success" sx={{ mt: 2 }}>
                   Code promo <strong>{appliedCouponData.appliedCoupon}</strong> appliqué !<br />
-                  Prix original : {appliedCouponData.originalPrice} {appliedCouponData.currency}<br />
-                  Prix réduit : {appliedCouponData.discountedPrice.toFixed(2)} {appliedCouponData.currency}
+                  {(() => {
+                    const regional = appliedCouponData.prices.find(
+                      (p) => p.region.toLowerCase() === geoPrice?.region.toLowerCase()
+                    ) || appliedCouponData.prices[0];
+
+                    return (
+                      <>
+                        Prix original : {regional.originalPrice} {regional.currency}<br />
+                        Prix réduit : {regional.discountedPrice.toFixed(2)} {regional.currency}
+                      </>
+                    );
+                  })()}
                 </Alert>
               )}
+
             </Box>
           )}
         </Grid>
@@ -198,23 +257,39 @@ const ServiceDetailPage = () => {
             <Divider sx={{ my: 2 }} />
 
             <Typography variant="h6" fontWeight="bold" gutterBottom>
-              Prix
+              Prix pour {locationInfo}
             </Typography>
 
-            {appliedCouponData ? (
-              <Box mt={2} p={2} bgcolor="action.selected" borderRadius={1}>
-                <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-                  Prix avec coupon
+            {geoPrice ? (
+              appliedCouponData ? (
+                (() => {
+                  const regional = appliedCouponData.prices.find(
+                    (p) => p.region.toLowerCase() === geoPrice.region.toLowerCase()
+                  ) || appliedCouponData.prices[0];
+
+                  return (
+                    <Box mt={2} p={2} bgcolor="action.selected" borderRadius={1}>
+                      <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+                        Prix avec coupon
+                      </Typography>
+                      <Typography variant="h6" color="primary">
+                        {regional.discountedPrice.toFixed(2)} {regional.currency}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        (Prix original: {regional.originalPrice} {regional.currency})
+                      </Typography>
+                    </Box>
+                  );
+                })()
+              ) : (
+                <Typography variant="h5" color="primary" fontWeight="bold">
+                  {geoPrice.amount} {geoPrice.currency}
                 </Typography>
-                <Typography variant="h6" color="primary">
-                  {appliedCouponData.discountedPrice.toFixed(2)} {appliedCouponData.currency}
-                </Typography>
-              </Box>
+              )
             ) : (
-              <Typography variant="h5" color="primary" fontWeight="bold">
-                {geoPrice.amount} {geoPrice.currency}
-              </Typography>
+              <Alert severity="warning">Aucune information de prix disponible</Alert>
             )}
+
 
             <Button
               variant="contained"

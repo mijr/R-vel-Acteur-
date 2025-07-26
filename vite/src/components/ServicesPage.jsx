@@ -317,15 +317,18 @@ const ServicesPage = ({ onNavigate }) => {
                         ))
                       )}
                     </Box>
-                    <Button
-                      endIcon={<ArrowRight size={18} />}
-                      variant="text"
-                      color="primary"
-                      onClick={() => navigate('/pages/login')}
-                      sx={{ textTransform: 'none' }}
-                    >
-                      Contact
-                    </Button>
+                     <Button
+                        size="small"
+                        endIcon={<ArrowRight size={16} />}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate('/serviceDetails', {
+                            state: { serviceId: service.id },
+                          });
+                        }}
+                      >
+                       Payer
+                      </Button>
                   </Box>
 
                  </Paper>

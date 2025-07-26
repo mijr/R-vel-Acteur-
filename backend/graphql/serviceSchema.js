@@ -16,17 +16,17 @@ const serviceTypeDefs = gql`
   }
 
   type GeoPrice {
-    region: String! # "africa", "europe", "asia", etc.
+    region: String!        # "africa", "europe", "asia", etc.
     amount: Float!
     currency: String!
   }
 
   type BillingMode {
-    type: String! # "one-time", "subscription", "installment"
-    periodicity: String # "monthly", "yearly", etc. for subscriptions
-    installments: Int # for installment plans
-    expiration: String # date when billing mode expires
-    rules: String # custom rules
+    type: String!          # "one-time", "subscription", "installment"
+    periodicity: String    # "monthly", "yearly", etc. for subscriptions
+    installments: Int      # for installment plans
+    expiration: String     # date when billing mode expires
+    rules: String          # custom rules
   }
 
   input ServiceInput {
@@ -75,22 +75,25 @@ const serviceTypeDefs = gql`
     pricing: String
   }
 
-  type ServiceWithCoupon {
-    service: Service!
+  #  NEW: Represents discounted price per region
+  type DiscountedPrice {
+    region: String!
     originalPrice: Float!
     discountedPrice: Float!
     currency: String!
-    appliedCoupon: String!
   }
-    type Query {
-      serviceWithCoupon(id: ID!, couponCode: String): ServiceWithCoupon
-    }
 
-
+  # Updated to support multiple regions with discount
+  type ServiceWithCoupon {
+    service: Service!
+    appliedCoupon: String!
+    prices: [DiscountedPrice!]!
+  }
 
   type Query {
     services: [Service!]!
     service(id: ID!): Service
+    serviceWithCoupon(id: ID!, couponCode: String): ServiceWithCoupon
   }
 
   type Mutation {
