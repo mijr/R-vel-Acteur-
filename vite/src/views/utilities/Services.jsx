@@ -18,6 +18,7 @@ import {
   FormControl,
   InputLabel,
   Checkbox,
+  FormControlLabel,
   ListItemText,
   OutlinedInput,
   Grid,
@@ -68,14 +69,30 @@ const AddServicePage = () => {
 
   const [selectedService, setSelectedService] = useState(null);
   const [openAddModal, setOpenAddModal] = useState(false);
-  const [form, setForm] = useState({
-    title: '',
-    description: '',
-    category: '',
-    methodology: '',
-    pricing: '',
-    targetAudience: [],
-  });
+const [form, setForm] = useState({
+  title: '',
+  description: '',
+  category: '',
+  methodology: '',
+  targetAudience: [],
+  pricing: [
+    { region: 'africa', amount: '', currency: 'XAF' },
+    { region: 'europe', amount: '', currency: 'EUR' },
+    { region: 'asia', amount: '', currency: 'USD' }
+  ],
+  billingMode: {
+    type: 'one-time',
+    periodicity: '',
+    installments: null,
+    expiration: '',
+    rules: ''
+  },
+  couponRules: {
+    allowed: false,
+    maxDiscount: null,
+    combinable: false
+  }
+});
   const [success, setSuccess] = useState(null);
   const [errorMsg, setErrorMsg] = useState(null);
 
@@ -86,33 +103,65 @@ const AddServicePage = () => {
   const scrollContainerRef = useRef(null);
 
   // Reset form helper
-  const resetForm = () => {
-    setForm({
-      title: '',
-      description: '',
-      category: '',
-      methodology: '',
-      pricing: '',
-      targetAudience: [],
-    });
-    setErrorMsg(null);
-  };
+ const resetForm = () => {
+  setForm({
+    title: '',
+    description: '',
+    category: '',
+    methodology: '',
+    targetAudience: [],
+    pricing: [
+      { region: 'africa', amount: '', currency: 'XAF' },
+      { region: 'europe', amount: '', currency: 'EUR' },
+      { region: 'asia', amount: '', currency: 'USD' }
+    ],
+    billingMode: {
+      type: 'one-time',
+      periodicity: '',
+      installments: null,
+      expiration: '',
+      rules: ''
+    },
+    couponRules: {
+      allowed: false,
+      maxDiscount: null,
+      combinable: false
+    }
+  });
+  setErrorMsg(null);
+};
 
   // When user selects a service to edit
-  useEffect(() => {
-    if (selectedService) {
-      setForm({
-        title: selectedService.title,
-        description: selectedService.description,
-        category: selectedService.category,
-        methodology: selectedService.methodology,
-        pricing: selectedService.pricing,
-        targetAudience: selectedService.targetAudience || [],
-      });
-      setSuccess(null);
-      setErrorMsg(null);
-    }
-  }, [selectedService]);
+ useEffect(() => {
+  if (selectedService) {
+    setForm({
+      title: selectedService.title,
+      description: selectedService.description,
+      category: selectedService.category,
+      methodology: selectedService.methodology,
+      targetAudience: selectedService.targetAudience || [],
+      pricing: selectedService.pricing || [
+        { region: 'africa', amount: '', currency: 'XAF' },
+        { region: 'europe', amount: '', currency: 'EUR' },
+        { region: 'asia', amount: '', currency: 'USD' }
+      ],
+      billingMode: selectedService.billingMode || {
+        type: 'one-time',
+        periodicity: '',
+        installments: null,
+        expiration: '',
+        rules: ''
+      },
+      couponRules: selectedService.couponRules || {
+        allowed: false,
+        maxDiscount: null,
+        combinable: false
+      }
+    });
+    setSuccess(null);
+    setErrorMsg(null);
+  }
+}, [selectedService]);
 
   // Scroll function for horizontal scrolling chevrons
   const scroll = (direction) => {
@@ -139,49 +188,45 @@ const AddServicePage = () => {
 
   // Handle form submit for add/update service
   const handleSubmit = async () => {
-    setErrorMsg(null);
-    try {
-      if (selectedService) {
-        // Update existing service
-        await updateService({
-          variables: {
-            id: selectedService.id,
-            input: {
-              title: form.title,
-              description: form.description,
-              category: form.category,
-              methodology: form.methodology,
-              pricing: form.pricing,
-              targetAudience: form.targetAudience,
-            },
-          },
-        });
-        setSuccess('Service mis à jour avec succès.');
-      } else {
-        // Add new service
-        await addService({
-          variables: {
-            input: {
-              title: form.title,
-              description: form.description,
-              category: form.category,
-              methodology: form.methodology,
-              pricing: form.pricing,
-              targetAudience: form.targetAudience,
-            },
-          },
-        });
-        setSuccess('Service ajouté avec succès.');
-        resetForm();
-      }
-      setOpenAddModal(false);
-      setSelectedService(null);
-      refetch(); // refresh list
-    } catch (err) {
-      setErrorMsg(err.message || 'Une erreur est survenue.');
-      setSuccess(null);
+  setErrorMsg(null);
+  try {
+    const input = {
+      title: form.title,
+      description: form.description,
+      category: form.category,
+      methodology: form.methodology,
+      pricing: form.pricing.map(p => ({
+        ...p,
+        amount: parseFloat(p.amount) || 0
+      })),
+      targetAudience: form.targetAudience,
+      billingMode: form.billingMode,
+      couponRules: form.couponRules
+    };
+
+    if (selectedService) {
+      await updateService({
+        variables: {
+          id: selectedService.id,
+          input
+        },
+      });
+      setSuccess('Service mis à jour avec succès.');
+    } else {
+      await addService({
+        variables: { input },
+      });
+      setSuccess('Service ajouté avec succès.');
+      resetForm();
     }
-  };
+    setOpenAddModal(false);
+    setSelectedService(null);
+    refetch();
+  } catch (err) {
+    setErrorMsg(err.message || 'Une erreur est survenue.');
+    setSuccess(null);
+  }
+};
 
   // Handle delete service (optional button)
   const handleDelete = async () => {
@@ -430,32 +475,38 @@ const AddServicePage = () => {
                     ))}
                   </Stack>
                 </Box>
-
-                <Box
-                  mt="auto"
-                  pt={2}
-                  borderTop={1}
-                  borderColor="divider"
-                  display="flex"
-                  justifyContent="space-between"
-                  alignItems="center"
-                >
-                  <Typography color="primary" fontWeight="bold">
-                    {service.pricing}€/séance
-                  </Typography>
-                   <Button
-                    endIcon={<ArrowRight size={18} />}
-                    variant="text"
-                    color="primary"
-                    onClick={() => {
-                      /* Implement navigation or contact logic here */
-                      alert(`Contact pour le service: ${service.title}`);
-                    }}
-                    sx={{ textTransform: 'none' }}
+                
+                  <Box
+                    mt="auto"
+                    pt={2}
+                    borderTop={1}
+                    borderColor="divider"
                   >
-                    Contact
-                  </Button>
-                </Box>
+                    <Typography variant="subtitle2" gutterBottom>
+                      Pricing (based on your region)
+                    </Typography>
+                    {service.pricing.map((price) => (
+                      <Box key={price.region} display="flex" justifyContent="space-between">
+                        <Typography variant="body2" textTransform="capitalize">
+                          {price.region}:
+                        </Typography>
+                        <Typography fontWeight="bold">
+                          {price.amount} {price.currency}
+                        </Typography>
+                      </Box>
+                    ))}
+                    {service.billingMode && (
+                      <Box mt={1}>
+                        <Typography variant="body2" color="text.secondary">
+                          {service.billingMode.type === 'one-time' && 'One-time payment'}
+                          {service.billingMode.type === 'subscription' && 
+                            `${service.billingMode.periodicity} subscription`}
+                          {service.billingMode.type === 'installment' && 
+                            `${service.billingMode.installments} installments`}
+                        </Typography>
+                      </Box>
+                    )}
+                  </Box>
               </Paper>
             ))}
           </Box>
@@ -515,75 +566,233 @@ const AddServicePage = () => {
               {errorMsg}
             </Alert>
           )}
+        <Stack spacing={2}>
+          <TextField
+            label="Titre"
+            fullWidth
+            value={form.title}
+            onChange={(e) => setForm({ ...form, title: e.target.value })}
+          />
 
-          <Stack spacing={2}>
-            <TextField
-              label="Titre"
-              fullWidth
-              value={form.title}
-              onChange={(e) => setForm({ ...form, title: e.target.value })}
-            />
+          <TextField
+            label="Description"
+            fullWidth
+            multiline
+            minRows={4}
+            value={form.description}
+            onChange={(e) => setForm({ ...form, description: e.target.value })}
+          />
 
-            <TextField
-              label="Description"
-              fullWidth
-              multiline
-              minRows={4}
-              value={form.description}
-              onChange={(e) => setForm({ ...form, description: e.target.value })}
-            />
+          <FormControl fullWidth>
+            <InputLabel id="category-select-label">Catégorie</InputLabel>
+            <Select
+              labelId="category-select-label"
+              label="Catégorie"
+              value={form.category}
+              onChange={(e) => setForm({ ...form, category: e.target.value })}
+            >
+              {categories.map((cat) => (
+                <MenuItem key={cat.id} value={cat.id}>
+                  {cat.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
 
-            <FormControl fullWidth>
-              <InputLabel id="category-select-label">Catégorie</InputLabel>
+          <TextField
+            label="Méthodologie"
+            fullWidth
+            multiline
+            minRows={2}
+            value={form.methodology}
+            onChange={(e) => setForm({ ...form, methodology: e.target.value })}
+          />
+
+          {/* Remove old Tarification field */}
+
+          <Box mt={2}>
+            <Typography variant="h6" gutterBottom>Geo Pricing</Typography>
+            {form.pricing.map((price, index) => (
+              <Box key={price.region} mb={2}>
+                <Typography variant="subtitle2" textTransform="capitalize">
+                  {price.region} Pricing
+                </Typography>
+                <Grid container spacing={2}>
+                  <Grid item xs={6}>
+                    <TextField
+                      label="Amount"
+                      type="number"
+                      fullWidth
+                      value={price.amount}
+                      onChange={(e) => {
+                        const newPricing = [...form.pricing];
+                        newPricing[index].amount = e.target.value;
+                        setForm({ ...form, pricing: newPricing });
+                      }}
+                    />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <TextField
+                      label="Currency"
+                      select
+                      fullWidth
+                      value={price.currency}
+                      onChange={(e) => {
+                        const newPricing = [...form.pricing];
+                        newPricing[index].currency = e.target.value;
+                        setForm({ ...form, pricing: newPricing });
+                      }}
+                    >
+                      <MenuItem value="XAF">XAF (Central Africa)</MenuItem>
+                      <MenuItem value="EUR">EUR (Europe)</MenuItem>
+                      <MenuItem value="USD">USD (Asia/International)</MenuItem>
+                    </TextField>
+                  </Grid>
+                </Grid>
+              </Box>
+            ))}
+          </Box>
+
+          <Box mt={2}>
+            <Typography variant="h6" gutterBottom>Billing Mode</Typography>
+            <FormControl fullWidth margin="normal">
+              <InputLabel>Billing Type</InputLabel>
               <Select
-                labelId="category-select-label"
-                label="Catégorie"
-                value={form.category}
-                onChange={(e) => setForm({ ...form, category: e.target.value })}
+                value={form.billingMode.type}
+                onChange={(e) => setForm({
+                  ...form,
+                  billingMode: { ...form.billingMode, type: e.target.value },
+                })}
               >
-                {categories.map((cat) => (
-                  <MenuItem key={cat.id} value={cat.id}>
-                    {cat.name}
-                  </MenuItem>
-                ))}
+                <MenuItem value="one-time">One-time Payment</MenuItem>
+                <MenuItem value="subscription">Subscription</MenuItem>
+                <MenuItem value="installment">Installment Plan</MenuItem>
               </Select>
             </FormControl>
 
+            {form.billingMode.type === 'subscription' && (
+              <FormControl fullWidth margin="normal">
+                <InputLabel>Periodicity</InputLabel>
+                <Select
+                  value={form.billingMode.periodicity}
+                  onChange={(e) => setForm({
+                    ...form,
+                    billingMode: { ...form.billingMode, periodicity: e.target.value },
+                  })}
+                >
+                  <MenuItem value="monthly">Monthly</MenuItem>
+                  <MenuItem value="quarterly">Quarterly</MenuItem>
+                  <MenuItem value="yearly">Yearly</MenuItem>
+                </Select>
+              </FormControl>
+            )}
+
+            {form.billingMode.type === 'installment' && (
+              <TextField
+                label="Number of Installments"
+                type="number"
+                fullWidth
+                margin="normal"
+                value={form.billingMode.installments || ''}
+                onChange={(e) => setForm({
+                  ...form,
+                  billingMode: { ...form.billingMode, installments: parseInt(e.target.value) },
+                })}
+              />
+            )}
+
             <TextField
-              label="Méthodologie"
+              label="Expiration Date"
+              type="date"
               fullWidth
+              margin="normal"
+              InputLabelProps={{ shrink: true }}
+              value={form.billingMode.expiration || ''}
+              onChange={(e) => setForm({
+                ...form,
+                billingMode: { ...form.billingMode, expiration: e.target.value },
+              })}
+            />
+
+            <TextField
+              label="Special Rules"
+              fullWidth
+              margin="normal"
               multiline
-              minRows={2}
-              value={form.methodology}
-              onChange={(e) => setForm({ ...form, methodology: e.target.value })}
+              rows={3}
+              value={form.billingMode.rules || ''}
+              onChange={(e) => setForm({
+                ...form,
+                billingMode: { ...form.billingMode, rules: e.target.value },
+              })}
+            />
+          </Box>
+
+          <Box mt={2}>
+            <Typography variant="h6" gutterBottom>Coupon Rules</Typography>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={form.couponRules.allowed}
+                  onChange={(e) => setForm({
+                    ...form,
+                    couponRules: { ...form.couponRules, allowed: e.target.checked },
+                  })}
+                />
+              }
+              label="Allow coupons for this service"
             />
 
-            <TextField
-              label="Tarification"
-              fullWidth
-              value={form.pricing}
-              onChange={(e) => setForm({ ...form, pricing: e.target.value })}
-            />
+            {form.couponRules.allowed && (
+              <>
+                <TextField
+                  label="Maximum Discount (%)"
+                  type="number"
+                  fullWidth
+                  margin="normal"
+                  value={form.couponRules.maxDiscount || ''}
+                  onChange={(e) => setForm({
+                    ...form,
+                    couponRules: { ...form.couponRules, maxDiscount: parseFloat(e.target.value) },
+                  })}
+                />
 
-            <FormControl fullWidth>
-              <InputLabel id="target-audience-label">Public cible</InputLabel>
-              <Select
-                labelId="target-audience-label"
-                multiple
-                value={form.targetAudience}
-                onChange={(e) => setForm({ ...form, targetAudience: e.target.value })}
-                input={<OutlinedInput label="Public cible" />}
-                renderValue={(selected) => selected.join(', ')}
-              >
-                {audienceOptions.map((aud) => (
-                  <MenuItem key={aud} value={aud}>
-                    <Checkbox checked={form.targetAudience.indexOf(aud) > -1} />
-                    <ListItemText primary={aud} />
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Stack>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={form.couponRules.combinable}
+                      onChange={(e) => setForm({
+                        ...form,
+                        couponRules: { ...form.couponRules, combinable: e.target.checked },
+                      })}
+                    />
+                  }
+                  label="Allow combining multiple coupons"
+                />
+              </>
+            )}
+          </Box>
+
+          <FormControl fullWidth>
+            <InputLabel id="target-audience-label">Public cible</InputLabel>
+            <Select
+              labelId="target-audience-label"
+              multiple
+              value={form.targetAudience}
+              onChange={(e) => setForm({ ...form, targetAudience: e.target.value })}
+              input={<OutlinedInput label="Public cible" />}
+              renderValue={(selected) => selected.join(', ')}
+            >
+              {audienceOptions.map((aud) => (
+                <MenuItem key={aud} value={aud}>
+                  <Checkbox checked={form.targetAudience.indexOf(aud) > -1} />
+                  <ListItemText primary={aud} />
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Stack>
+
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
           {selectedService && (

@@ -1,9 +1,10 @@
 // assets
 import { IconBrandChrome, IconHelp,IconArticle, IconMessage } from '@tabler/icons-react';
 import DashboardCustomizeIcon from '@mui/icons-material/DashboardCustomize';
+import { LocalOffer as IconOffer } from '@mui/icons-material';
 
 // constant
-const icons = { IconBrandChrome, IconHelp, IconArticle, IconMessage, DashboardCustomizeIcon };
+const icons = { IconBrandChrome, IconHelp, IconArticle, IconMessage, DashboardCustomizeIcon, IconOffer };
 
 // ==============================|| SAMPLE PAGE & DOCUMENTATION MENU ITEMS ||============================== //
 
@@ -18,6 +19,14 @@ const other = {
       type: 'item',
       url: '/articles',
       icon: IconArticle,
+      breadcrumbs: false
+    },
+    {
+      id: 'coupon',
+      title: 'Coupons',
+      type: 'item',
+      url: '/coupon',
+      icon: IconOffer,
       breadcrumbs: false
     },
       {

@@ -6,7 +6,8 @@ const LandingPage = Loadable(lazy(() => import('home/LandingPage')));
 const AppointmentPage = Loadable(lazy(() => import('home/AppointmentPage')));
 const BlogPage = Loadable(lazy(() => import('home/Blog')));
 const NewsPage = Loadable(lazy(() => import('home/News')));
-
+const ServiceDetail = Loadable(lazy(() => import('../components/ServiceDetailPage')));
+const ServicesPage = Loadable(lazy(() => import('../components/ServicesPage')));
 const LandingRoutes = {
   path: '/',
   children: [
@@ -25,6 +26,14 @@ const LandingRoutes = {
     {
       path: 'news',
       element: <NewsPage />
+    },
+    {
+      path: 'serviceDetails',
+      element: <ServiceDetail />
+    },
+    {
+      path: 'servicesPage',
+      element: <ServicesPage />
     }
   ]
 };

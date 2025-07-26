@@ -8,9 +8,25 @@ const serviceTypeDefs = gql`
     category: String!
     methodology: String!
     targetAudience: [String!]!
-    pricing: String!
+    pricing: [GeoPrice!]!
+    billingMode: BillingMode!
+    couponRules: CouponRules
     createdAt: String!
     updatedAt: String!
+  }
+
+  type GeoPrice {
+    region: String! # "africa", "europe", "asia", etc.
+    amount: Float!
+    currency: String!
+  }
+
+  type BillingMode {
+    type: String! # "one-time", "subscription", "installment"
+    periodicity: String # "monthly", "yearly", etc. for subscriptions
+    installments: Int # for installment plans
+    expiration: String # date when billing mode expires
+    rules: String # custom rules
   }
 
   input ServiceInput {
@@ -19,7 +35,35 @@ const serviceTypeDefs = gql`
     category: String!
     methodology: String!
     targetAudience: [String!]!
-    pricing: String!
+    pricing: [GeoPriceInput!]!
+    billingMode: BillingModeInput!
+    couponRules: CouponRulesInput
+  }
+
+  input GeoPriceInput {
+    region: String!
+    amount: Float!
+    currency: String!
+  }
+
+  input BillingModeInput {
+    type: String!
+    periodicity: String
+    installments: Int
+    expiration: String
+    rules: String
+  }
+
+  type CouponRules {
+    allowed: Boolean
+    maxDiscount: Float
+    combinable: Boolean
+  }
+
+  input CouponRulesInput {
+    allowed: Boolean
+    maxDiscount: Float
+    combinable: Boolean
   }
 
   input ServiceUpdateInput {
@@ -31,6 +75,19 @@ const serviceTypeDefs = gql`
     pricing: String
   }
 
+  type ServiceWithCoupon {
+    service: Service!
+    originalPrice: Float!
+    discountedPrice: Float!
+    currency: String!
+    appliedCoupon: String!
+  }
+    type Query {
+      serviceWithCoupon(id: ID!, couponCode: String): ServiceWithCoupon
+    }
+
+
+
   type Query {
     services: [Service!]!
     service(id: ID!): Service
@@ -38,6 +95,7 @@ const serviceTypeDefs = gql`
 
   type Mutation {
     addService(input: ServiceInput!): Service!
+    applyCouponToService(serviceId: ID!, couponCode: String!): ServiceWithCoupon!
     updateService(id: ID!, input: ServiceUpdateInput!): Service!
     deleteService(id: ID!): Boolean!
   }

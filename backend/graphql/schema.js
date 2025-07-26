@@ -3,12 +3,42 @@ const userTypeDefs = require('./userTypeDefs');
 
 module.exports = gql`
    ${userTypeDefs}
+   
+   type UserProfile {
+    id: ID!
+    currency: String
+    profession: String
+    weight: Float
+    height: Float
+    date_of_birth: String
+    age: Int
+    matrimonial_status: String
+    description: String
+  }
 
   type AuthPayload {
     token: String!
     user: User!
   }
+  
+  extend type Query {
+    getUserProfile(id: ID!): UserProfile
+  }
 
+  extend type Mutation {
+    updateUserProfile(id: ID!, input: UpdateUserProfileInput!): UserProfile
+  }
+    
+  input UpdateUserProfileInput {
+    currency: String
+    profession: String
+    weight: Float
+    height: Float
+    date_of_birth: String
+    matrimonial_status: String
+    description: String
+  }
+ 
   input UpdateUserInput {
     email: String
     firstName: String
@@ -33,9 +63,6 @@ module.exports = gql`
     requestPasswordReset(email: String!): String
      resetPasswordWithOTP(email: String!, otpCode: String!, newPassword: String!): String
     resetPassword(token: String!, newPassword: String!): String
-
-
-
     updateUser(id: ID!, input: UpdateUserInput!): User
     deleteUser(id: ID!): Boolean
    changePassword(currentPassword: String!, newPassword: String!): String
@@ -44,4 +71,5 @@ module.exports = gql`
     type Mutation {
     _empty: String
   }
+    
 `;

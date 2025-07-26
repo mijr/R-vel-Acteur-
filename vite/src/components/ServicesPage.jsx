@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect  } from 'react';
 import {
   Filter,
   Users,
@@ -25,14 +25,38 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@apollo/client';
 import { GET_SERVICES } from '../graphql/queries';
+import { useGeoLocation } from '../constants/useGeoLocation';
 
 const ServicesPage = ({ onNavigate }) => {
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [localizedServices, setLocalizedServices] = useState([]);
+
   const [selectedAudience, setSelectedAudience] = useState('all');
   const navigate = useNavigate();
+   const { location, isLoading, isError } = useGeoLocation();
+   console.log('GeoLocation:', location);
   
   // Fetch services using GraphQL
   const { data, loading, error } = useQuery(GET_SERVICES);
+  console.log('GraphQL Data:', data);
+  useEffect(() => {
+    if (data?.services && location) {
+      // Enhance services with localized pricing
+      const enhancedServices = data.services.map(service => {
+        // Find pricing for the current region or use default
+        const regionPricing = service.pricing.find(p => 
+          p.region.toLowerCase() === location.regionName.toLowerCase()
+        ) || service.pricing[0]; // Fallback to first pricing if region not found
+        
+        return {
+          ...service,
+          localizedPricing: regionPricing
+        };
+      });
+      
+      setLocalizedServices(enhancedServices);
+    }
+  }, [data, location]);
   
   const categories = [
     { id: 'all', name: 'Tous les services', icon: null },
@@ -54,7 +78,7 @@ const ServicesPage = ({ onNavigate }) => {
   const handleLogin = () => navigate('/pages/login');
   
   // Use data from GraphQL if available, otherwise fallback to empty array
-  const services = data?.services || [];
+  const services = localizedServices.length > 0 ? localizedServices : data?.services || [];
   
   const filteredServices = services.filter((service) => {
     const categoryMatch =
@@ -275,20 +299,36 @@ const ServicesPage = ({ onNavigate }) => {
                     justifyContent="space-between"
                     alignItems="center"
                   >
-                    <Typography color="primary" fontWeight="bold">
-                      {service.pricing}€/séance
-                    </Typography>
+                    <Box>
+                      <Typography variant="subtitle2" gutterBottom>
+                        {service.localizedPricing ? 
+                          `Tarif (${service.localizedPricing.region})` : 
+                          'Tarifs'}
+                      </Typography>
+                      {service.localizedPricing ? (
+                        <Typography variant="body2">
+                          {service.localizedPricing.amount} {service.localizedPricing.currency}
+                        </Typography>
+                      ) : (
+                        service.pricing.map((price, index) => (
+                          <Typography key={index} variant="body2">
+                            {price.region}: {price.amount} {price.currency}
+                          </Typography>
+                        ))
+                      )}
+                    </Box>
                     <Button
                       endIcon={<ArrowRight size={18} />}
                       variant="text"
                       color="primary"
-                      onClick={() => onNavigate('appointment')}
+                      onClick={() => navigate('/pages/login')}
                       sx={{ textTransform: 'none' }}
                     >
                       Contact
                     </Button>
                   </Box>
-                </Paper>
+
+                 </Paper>
               ))
             ) : (
               <Typography

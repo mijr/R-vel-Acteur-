@@ -89,21 +89,21 @@ export default function ProfilePage() {
         }
       });
       await refetch();
-      setSuccessMessage('Profile updated successfully!');
+      setSuccessMessage('Profil mis à jour avec succès !');
     } catch (err) {
-      setErrorMessage(err.message || 'Failed to update profile. Please try again.');
+      setErrorMessage(err.message || 'Échec de la mise à jour du profil. Veuillez réessayer.');
     }
   };
 
   const handlePasswordChange = async () => {
     setPasswordMessage('');
     if (!currentPassword || !newPassword) {
-      setPasswordMessage("Please fill in both password fields.");
+      setPasswordMessage("Veuillez remplir les deux champs du mot de passe.");
       return;
     }
 
     if (newPassword.length < 8) {
-      setPasswordMessage("New password must be at least 8 characters long.");
+      setPasswordMessage("Le nouveau mot de passe doit contenir au moins 8 caractères.");
       return;
     }
 
@@ -111,11 +111,11 @@ export default function ProfilePage() {
       const { data } = await changePassword({
         variables: { currentPassword, newPassword }
       });
-      setPasswordMessage(data.changePassword || "Password changed successfully!");
+      setPasswordMessage(data.changePassword || "Mot de passe modifié avec succès !");
       setCurrentPassword('');
       setNewPassword('');
     } catch (err) {
-      setPasswordMessage(err.message || "Failed to change password. Please check your current password.");
+      setPasswordMessage(err.message || "Échec du changement de mot de passe. Veuillez vérifier votre mot de passe actuel.");
     }
   };
 
@@ -131,24 +131,24 @@ export default function ProfilePage() {
   
   if (error) return (
     <Alert severity="error" sx={{ mt: 2 }}>
-      Error loading profile: {error.message}
+      Erreur lors du chargement du profil : {error.message}
     </Alert>
   );
 
   return (
-    <MainCard title="My Profile">
+    <MainCard title="Mon Profil">
       <Paper elevation={3} sx={{ padding: 4, maxWidth: 800, margin: '0 auto' }}>
         <Grid container spacing={3}>
-          {/* ========== Profile Information Section ========== */}
+          {/* ========== Section Informations Personnelles ========== */}
           <Grid item xs={12}>
-            <Typography variant="h5" gutterBottom>Personal Information</Typography>
+            <Typography variant="h5" gutterBottom>Informations personnelles</Typography>
             <Divider sx={{ mb: 3 }} />
           </Grid>
 
           <Grid item xs={12} sm={6}>
             <TextField
               fullWidth
-              label="First Name"
+              label="Prénom"
               name="firstName"
               value={form.firstName}
               onChange={handleChange}
@@ -160,7 +160,7 @@ export default function ProfilePage() {
           <Grid item xs={12} sm={6}>
             <TextField
               fullWidth
-              label="Last Name"
+              label="Nom"
               name="lastName"
               value={form.lastName}
               onChange={handleChange}
@@ -205,13 +205,13 @@ export default function ProfilePage() {
               onClick={handleUpdate}
               disabled={!form.firstName || !form.lastName || !form.email}
             >
-              Save Changes
+              Enregistrer les modifications
             </Button>
           </Grid>
 
-          {/* ========== Password Change Section ========== */}
+          {/* ========== Section Changement de Mot de Passe ========== */}
           <Grid item xs={12} mt={4}>
-            <Typography variant="h5" gutterBottom>Change Password</Typography>
+            <Typography variant="h5" gutterBottom>Changer le mot de passe</Typography>
             <Divider sx={{ mb: 3 }} />
           </Grid>
 
@@ -219,7 +219,7 @@ export default function ProfilePage() {
             <TextField
               fullWidth
               type={showPassword.current ? 'text' : 'password'}
-              label="Current Password"
+              label="Mot de passe actuel"
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
               variant="outlined"
@@ -243,12 +243,12 @@ export default function ProfilePage() {
             <TextField
               fullWidth
               type={showPassword.new ? 'text' : 'password'}
-              label="New Password"
+              label="Nouveau mot de passe"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               variant="outlined"
               size="small"
-              helperText="Password must be at least 8 characters long"
+              helperText="Le mot de passe doit contenir au moins 8 caractères"
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">
@@ -267,7 +267,7 @@ export default function ProfilePage() {
           {passwordMessage && (
             <Grid item xs={12}>
               <Alert 
-                severity={passwordMessage.includes('success') ? 'success' : 'error'}
+                severity={passwordMessage.toLowerCase().includes('succès') ? 'success' : 'error'}
                 onClose={() => setPasswordMessage('')}
               >
                 {passwordMessage}
@@ -282,7 +282,7 @@ export default function ProfilePage() {
               onClick={handlePasswordChange}
               disabled={!currentPassword || !newPassword || newPassword.length < 8}
             >
-              Update Password
+              Mettre à jour le mot de passe
             </Button>
           </Grid>
         </Grid>

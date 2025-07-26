@@ -31,10 +31,23 @@ module.exports = (sequelize) => {
         allowNull: false,
         field: 'target_audience',
       },
-      pricing: {
-        type: DataTypes.STRING,
+       pricing: {
+        type: DataTypes.JSONB, // Changed from STRING to JSONB
         allowNull: false,
       },
+      billingMode: {
+        type: DataTypes.JSONB,
+        allowNull: false,
+        field: 'billing_mode'
+      },
+      couponRules: {
+        type: DataTypes.JSONB,
+        field: 'coupon_rules'
+      },
+      geoPricing: {
+        type: DataTypes.JSONB,
+        field: 'geo_pricing'
+      }
     },
     {
       sequelize,

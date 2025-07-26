@@ -18,8 +18,9 @@ const UtilsComment = Loadable(lazy(() => import('views/utilities/Comment')));
 const UtilsBlog = Loadable(lazy(() =>import('views/utilities/Blog') ));
 const UtilsSociologicalDashboard = Loadable(lazy(() =>import('views/utilities/SociologicalDashboard') ));
 const UtilsUserDashboard = Loadable(lazy(() =>import('views/utilities/UserDashboard') ));
+const Coupon = Loadable(lazy(() => import('views/utilities/Coupon')));
 // sample page routing
-const SamplePage = Loadable(lazy(() => import('views/sample-page')));
+const UserProfile = Loadable(lazy(() => import('views/sample-page/UserProfile')));
 const Profile = Loadable(lazy(() => import('views/sample-page/Profile')));
 // ==============================|| MAIN ROUTING ||============================== //
 
@@ -65,6 +66,10 @@ const MainRoutes = {
       element: <UtilsServices />
     },
     {
+      path: '/Coupon',
+      element: <Coupon />
+    },
+    {
       path: '/Comment',
       element: <UtilsComment /> 
 
@@ -86,6 +91,10 @@ const MainRoutes = {
     {
       path: '/Profile',
       element: <Profile />
+    },
+    {
+      path: '/UserProfile',
+      element: <UserProfile />
     }
   ]
 };

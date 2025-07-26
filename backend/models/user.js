@@ -20,6 +20,15 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: true,
       unique: true
     },
+    
+     currency: DataTypes.STRING,
+    profession: DataTypes.STRING,
+    weight: DataTypes.DECIMAL(5, 2),
+    height: DataTypes.DECIMAL(5, 2),
+    date_of_birth: DataTypes.DATE,
+    matrimonial_status: DataTypes.STRING,
+    description: DataTypes.TEXT,
+
     resetToken: DataTypes.STRING,
     resetTokenExpiry: DataTypes.DATE,
     otpCode: DataTypes.STRING,

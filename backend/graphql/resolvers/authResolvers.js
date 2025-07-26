@@ -1,7 +1,6 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { User } = require('../../models');
-const crypto = require('crypto');
 const { Op } = require('sequelize');
 require('dotenv').config();
 
@@ -22,7 +21,29 @@ module.exports = {
       if (!user) throw new Error('Unauthorized');
       if (user.role !== 'admin') throw new Error('Access denied, admin only');
       return await User.findAll();
-    }
+    },
+    getUserProfile: async (_, { id }, { models }) => {
+      const user = await models.User.findByPk(id);
+
+      if (!user) {
+        throw new Error("User not found");
+      }
+
+      // Return default values if profile fields are missing
+      return {
+        id: user.id,
+        currency: user.currency || '',
+        profession: user.profession || '',
+        weight: user.weight,
+        height: user.height,
+        date_of_birth: user.date_of_birth,
+        age: user.date_of_birth
+          ? new Date().getFullYear() - new Date(user.date_of_birth).getFullYear()
+          : null,
+        matrimonial_status: user.matrimonial_status || '',
+        description: user.description || '',
+      };
+    },
   },
 
   Mutation: {
@@ -41,6 +62,7 @@ module.exports = {
       const token = generateToken(user);
       return { token, user };
     },
+
     requestPasswordReset: async (_, { email }) => {
       const user = await User.findOne({ where: { email } });
       if (!user) throw new Error("User not found");
@@ -63,17 +85,13 @@ module.exports = {
           <p>If you did not request a password reset, please ignore this email.</p>
         </div>`;
 
-      // Send OTP SMS message
       const smsMessage = `Your password reset OTP code is: ${otpCode}. It expires in 10 minutes.`;
 
       try {
         await sendEmail(user.email, subject, html);
 
-        // Only send SMS if user has a phone number
         if (user.phone) {
           await sendSms(user.phone, smsMessage);
-        } else {
-          console.warn('User has no phone number, skipping SMS sending.');
         }
 
         return true;
@@ -96,7 +114,7 @@ module.exports = {
       await user.save();
 
       return "Password has been reset successfully.";
-    },  
+    },
 
     resetPassword: async (_, { token, newPassword }) => {
       const user = await User.findOne({
@@ -114,11 +132,10 @@ module.exports = {
     },
 
     updateUser: async (_, { id, input }, { user }) => {
-     if (!user) throw new Error('Unauthorized');
+      if (!user) throw new Error('Unauthorized');
       if (user.role !== 'admin' && user.id !== id) {
         throw new Error('Access denied');
       }
-
 
       const userToUpdate = await User.findByPk(id);
       if (!userToUpdate) throw new Error('User not found');
@@ -137,18 +154,27 @@ module.exports = {
       await userToDelete.destroy();
       return true;
     },
+
     changePassword: async (_, { currentPassword, newPassword }, { user }) => {
       if (!user) throw new Error('Unauthorized');
 
       const dbUser = await User.findByPk(user.id);
-      if (!dbUser) throw new Error('Utilisateur introuvable');
+      if (!dbUser) throw new Error('User not found');
 
       const valid = await bcrypt.compare(currentPassword, dbUser.password);
-      if (!valid) throw new Error('Mot de passe actuel incorrect');
+      if (!valid) throw new Error('Current password is incorrect');
 
       dbUser.password = await bcrypt.hash(newPassword, 10);
       await dbUser.save();
-      return "Mot de passe mis à jour avec succès";
+      return "Password updated successfully";
+    },
+
+    updateUserProfile: async (_, { id, input }) => {
+      const user = await User.findByPk(id);
+      if (!user) throw new Error("User not found");
+
+      await user.update(input);
+      return user;
     },
   },
 };

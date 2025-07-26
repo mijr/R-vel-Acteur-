@@ -9,6 +9,7 @@ const userTypeDefs = gql`
     lastName: String
     phone: String
   }
+    
 `;
 
 module.exports = userTypeDefs;

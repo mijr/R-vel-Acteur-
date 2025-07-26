@@ -41,11 +41,13 @@ function MenuList() {
       });
     }
     
-      // Filter out 'blog' from otherMenu children before pushing
-      const filteredOtherMenu = {
-        ...otherMenu,
-        children: otherMenu.children.filter(item => item.id !== 'blog')
-      };
+    const excludeIds = ['blog', 'coupon'];
+
+    const filteredOtherMenu = {
+      ...otherMenu,
+      children: otherMenu.children.filter(item => !excludeIds.includes(item.id))
+    };
+
     // Tous les utilisateurs voient le groupe "Témoignages", "Sample Page" et "Documentation"
     userMenu.push(filteredOtherMenu);
 

@@ -19,7 +19,7 @@ import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import { useApolloClient } from '@apollo/client';
 import User1 from 'assets/images/users/user-round.svg'; // fallback avatar
-import { IconLogout, IconSettings } from '@tabler/icons-react';
+import { IconLogout, IconSettings, IconUser, IconActivity } from '@tabler/icons-react';
 
 import MainCard from 'ui-component/cards/MainCard';
 import Transitions from 'ui-component/extended/Transitions';
@@ -167,12 +167,32 @@ console.log('User token from localStorage:', token);
                         <ListItemButton
                           sx={{ borderRadius: `${borderRadius}px` }}
                           selected={false}
+                          onClick={() => navigate('/UserProfile')}
+                        >
+                          <ListItemIcon>
+                            <IconUser stroke={1.5} size="20px" />
+                          </ListItemIcon>
+                          <ListItemText primary={<Typography variant="body2">Profil utilisateur</Typography>} />
+                        </ListItemButton>
+                        <ListItemButton
+                          sx={{ borderRadius: `${borderRadius}px` }}
+                          selected={false}
+                          onClick={() => navigate('')}
+                        >
+                          <ListItemIcon>
+                            <IconActivity stroke={1.5} size="20px" />
+                          </ListItemIcon>
+                          <ListItemText primary={<Typography variant="body2">Mes Activite</Typography>} />
+                        </ListItemButton>
+                         <ListItemButton
+                          sx={{ borderRadius: `${borderRadius}px` }}
+                          selected={false}
                           onClick={() => navigate('/Profile')}
                         >
                           <ListItemIcon>
                             <IconSettings stroke={1.5} size="20px" />
                           </ListItemIcon>
-                          <ListItemText primary={<Typography variant="body2">Account Settings</Typography>} />
+                          <ListItemText primary={<Typography variant="body2">Paramètres du compte</Typography>} />
                         </ListItemButton>
                         <ListItemButton
                           sx={{ borderRadius: `${borderRadius}px` }}

@@ -12,6 +12,8 @@ const newsSchema = require('./graphql/newsSchema');
 const newsResolver = require('./graphql/resolvers/newsResolver');
 const testimonialSchema = require('./graphql/testimonialSchema');
 const serviceSchema = require('./graphql/serviceSchema');
+const couponSchema = require('./graphql/couponSchema');
+const couponResolvers = require('./graphql/resolvers/couponResolvers');
 const serviceResolvers = require('./graphql/resolvers/serviceResolvers');
 const article = require('./graphql/article');
 const kpi  = require('./graphql/kpi');
@@ -162,8 +164,8 @@ app.post('/api/book-event', async (req, res) => {
 });
 
 // ─── Apollo & DB Setup ──────────────────────────────────────────────────────
-const typeDefs = mergeTypeDefs([schema, appointment, newsSchema, testimonialSchema, article, kpi, serviceSchema]);
-const resolvers = mergeResolvers([authResolvers, appointmentResolvers, newsResolver, testimonialResolvers, articleResolvers, kpiResolvers, serviceResolvers]);
+const typeDefs = mergeTypeDefs([schema, appointment, newsSchema, testimonialSchema, article, kpi, serviceSchema, couponSchema]);
+const resolvers = mergeResolvers([authResolvers, appointmentResolvers, newsResolver, testimonialResolvers, articleResolvers, kpiResolvers, serviceResolvers, couponResolvers]);
 
 
 const startServer = async () => {

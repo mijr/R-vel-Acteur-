@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import {
   Box,
   Container,
@@ -25,9 +25,10 @@ import {
 import StarIcon from '@mui/icons-material/Star';
 import { gql, useQuery } from '@apollo/client';
 import { useNavigate } from 'react-router-dom';
+import { useGeoLocation } from '../constants/useGeoLocation';
 
 // GraphQL Queries
-const GET_SERVICES = gql`
+export const GET_SERVICES = gql`
   query GetServices {
     services {
       id
@@ -36,7 +37,11 @@ const GET_SERVICES = gql`
       category
       methodology
       targetAudience
-      pricing
+      pricing {
+        region
+        amount
+        currency
+      }
     }
   }
 `;
@@ -103,14 +108,35 @@ const HomePage = ({ onNavigate }) => {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const scrollRef = useRef(null);
   const navigate = useNavigate();
-
+  const { location, isLoading: geoLoading, isError: geoError } = useGeoLocation();
+  console.log(location)
   const { data: servicesData, loading: servicesLoading, error: servicesError } = useQuery(GET_SERVICES);
   const { data: newsData, loading: newsLoading, error: newsError } = useQuery(GET_NEWS);
   const { data: testimonialsData, loading: testimonialsLoading, error: testimonialsError } = useQuery(GET_TESTIMONIALS);
 
-  const servicesList = servicesData?.services || [];
+  const [localizedServices, setLocalizedServices] = useState([]);
   const testimonialsList = testimonialsData?.testimonials || [];
-  
+
+  useEffect(() => {
+    if (servicesData?.services && location) {
+      const enhancedServices = servicesData.services.map(service => {
+        // Find pricing for the current region or use default
+        const regionPricing = service.pricing.find(p => 
+          p.region.toLowerCase() === location.regionName?.toLowerCase()
+        ) || service.pricing[0]; // Fallback to first pricing if region not found
+        
+        return {
+          ...service,
+          localizedPricing: regionPricing
+        };
+      });
+      
+      setLocalizedServices(enhancedServices);
+    } else if (servicesData?.services) {
+      setLocalizedServices(servicesData.services);
+    }
+  }, [servicesData, location]);
+
   const itemsPerPage = 3;
   const [startIndex, setStartIndex] = useState(0);
   const canGoLeft = startIndex > 0;
@@ -145,6 +171,11 @@ const HomePage = ({ onNavigate }) => {
           </Typography>
           <Typography variant={isMobile ? 'body1' : 'h6'} color="text.secondary" sx={{ maxWidth: 700, mx: 'auto', mb: 4, fontSize: isMobile ? '1.1rem' : '1.25rem' }}>
             Accompagnement professionnel en coaching, formation et médiation.
+            {location?.city && (
+              <Box component="span" sx={{ display: 'block', mt: 1, fontWeight: 500 }}>
+                Services disponibles à {location.city}
+              </Box>
+            )}
           </Typography>
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} justifyContent="center" sx={{ mb: 2 }}>
             <Button variant="contained" size="large" endIcon={<ArrowRight size={20} />} onClick={handleLogin} sx={{ px: 4, py: 1.5 }}>
@@ -202,17 +233,17 @@ const HomePage = ({ onNavigate }) => {
             </Alert>
           )}
 
-          {!servicesLoading && !servicesError && servicesList.length === 0 && (
+          {!servicesLoading && !servicesError && localizedServices.length === 0 && (
             <Typography align="center" color="text.secondary">
               Aucun service disponible pour le moment.
             </Typography>
           )}
 
           {/* Desktop Layout */}
-          {!isMobile && !servicesLoading && !servicesError && servicesList.length > 0 && (
+          {!isMobile && !servicesLoading && !servicesError && localizedServices.length > 0 && (
             <Box sx={{ position: 'relative' }}>
               <Box ref={scrollRef} sx={{ display: 'flex', overflowX: 'auto', scrollBehavior: 'smooth', gap: 3, pb: 1, '&::-webkit-scrollbar': { display: 'none' }, msOverflowStyle: 'none', scrollbarWidth: 'none' }}>
-                {servicesList.map((service) => (
+                {localizedServices.map((service) => (
                   <Paper key={service.id} sx={{ flex: '0 0 auto', width: CARD_WIDTH, p: 3, borderRadius: 3, boxShadow: 3, bgcolor: 'background.default', cursor: 'pointer', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', '&:hover': { boxShadow: 6 } }} onClick={() => onNavigate('serviceDetails', { serviceId: service.id })} tabIndex={0}>
                     <Chip label={service.category.charAt(0).toUpperCase() + service.category.slice(1)} size="small" color={{ coaching: 'secondary', formation: 'success', mediation: 'warning', facilitation: 'info', art: 'error' }[service.category] || 'default'} sx={{ mb: 1, alignSelf: 'flex-start' }} />
                     <Typography variant="h6" fontWeight="bold" gutterBottom>{service.title}</Typography>
@@ -222,8 +253,29 @@ const HomePage = ({ onNavigate }) => {
                         <Chip key={i} label={aud} size="small" variant="outlined" sx={{ fontSize: 11 }} />
                       ))}
                     </Stack>
-                    <Typography variant="caption" color="text.secondary" sx={{ mb: 2, fontWeight: '600' }}>{service.pricing}€/séance</Typography>
-                    <Button size="small" endIcon={<ArrowRight size={16} />} onClick={(e) => { e.stopPropagation(); onNavigate('serviceDetails', { serviceId: service.id }); }}>
+                    <Box sx={{ mb: 2 }}>
+                      {service.localizedPricing ? (
+                        <Typography variant="caption" color="text.secondary" sx={{ fontWeight: '600', display: 'block' }}>
+                          {service.localizedPricing.region}: {service.localizedPricing.amount} {service.localizedPricing.currency}
+                        </Typography>
+                      ) : (
+                        service.pricing.map((price, index) => (
+                          <Typography key={index} variant="caption" color="text.secondary" sx={{ fontWeight: '600', display: 'block' }}>
+                            {price.region}: {price.amount} {price.currency}
+                          </Typography>
+                        ))
+                      )}
+                    </Box>
+                    <Button
+                      size="small"
+                      endIcon={<ArrowRight size={16} />}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate('/serviceDetails', {
+                          state: { serviceId: service.id },
+                        });
+                      }}
+                    >
                       En savoir plus
                     </Button>
                   </Paper>
@@ -239,20 +291,41 @@ const HomePage = ({ onNavigate }) => {
           )}
 
           {/* Mobile Layout */}
-          {isMobile && !servicesLoading && !servicesError && servicesList.length > 0 && (
+          {isMobile && !servicesLoading && !servicesError && localizedServices.length > 0 && (
             <Stack spacing={3}>
-              {servicesList.slice(0, 3).map((service) => (
-                <Paper key={service.id} sx={{ p: 2, borderRadius: 2, boxShadow: 2 }} onClick={() => onNavigate('serviceDetails', { serviceId: service.id })} tabIndex={0}>
-                  <Chip label={service.category.charAt(0).toUpperCase() + service.category.slice(1)} size="small" color={{ coaching: 'secondary', formation: 'success', mediation: 'warning', facilitation: 'info', art: 'error' }[service.category] || 'default'} sx={{ mb: 1 }} />
+              {localizedServices.slice(0, 3).map((service) => (
+                <Paper key={service.id} sx={{ flex: '0 0 auto', width: CARD_WIDTH, p: 3, borderRadius: 3, boxShadow: 3, bgcolor: 'background.default', cursor: 'pointer', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', '&:hover': { boxShadow: 6 } }} onClick={() => onNavigate('serviceDetails', { serviceId: service.id })} tabIndex={0}>
+                  <Chip label={service.category.charAt(0).toUpperCase() + service.category.slice(1)} size="small" color={{ coaching: 'secondary', formation: 'success', mediation: 'warning', facilitation: 'info', art: 'error' }[service.category] || 'default'} sx={{ mb: 1, alignSelf: 'flex-start' }} />
                   <Typography variant="h6" fontWeight="bold" gutterBottom>{service.title}</Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>{service.description.length > 100 ? service.description.slice(0, 100) + '...' : service.description}</Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ flexGrow: 1, mb: 1 }}>{service.description.length > 120 ? service.description.slice(0, 120) + '...' : service.description}</Typography>
                   <Stack direction="row" spacing={1} mb={1} flexWrap="wrap">
                     {service.targetAudience.slice(0, 3).map((aud, i) => (
                       <Chip key={i} label={aud} size="small" variant="outlined" sx={{ fontSize: 11 }} />
                     ))}
                   </Stack>
-                  <Typography variant="caption" color="text.secondary" sx={{ mb: 1, fontWeight: '600' }}>{service.pricing}€/séance</Typography>
-                  <Button size="small" endIcon={<ArrowRight size={16} />} onClick={(e) => { e.stopPropagation(); onNavigate('serviceDetails', { serviceId: service.id }); }}>
+                  <Box sx={{ mb: 2 }}>
+                    {service.localizedPricing ? (
+                      <Typography variant="caption" color="text.secondary" sx={{ fontWeight: '600', display: 'block' }}>
+                        {service.localizedPricing.region}: {service.localizedPricing.amount} {service.localizedPricing.currency}
+                      </Typography>
+                    ) : (
+                      service.pricing.map((price, index) => (
+                        <Typography key={index} variant="caption" color="text.secondary" sx={{ fontWeight: '600', display: 'block' }}>
+                          {price.region}: {price.amount} {price.currency}
+                        </Typography>
+                      ))
+                    )}
+                  </Box>
+                  <Button
+                    size="small"
+                    endIcon={<ArrowRight size={16} />}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate('/serviceDetails', {
+                        state: { serviceId: service.id },
+                      });
+                    }}
+                  >
                     En savoir plus
                   </Button>
                 </Paper>
