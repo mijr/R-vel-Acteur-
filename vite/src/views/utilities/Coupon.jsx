@@ -11,7 +11,6 @@ import {
 
 export default function CouponPage() {
   const { data, refetch } = useQuery(GET_COUPONS);
-  console.log('Coupons data:', data);
   const [createCoupon] = useMutation(CREATE_COUPON);
   const [updateCoupon] = useMutation(UPDATE_COUPON);
   const [deleteCoupon] = useMutation(DELETE_COUPON);
@@ -22,8 +21,27 @@ export default function CouponPage() {
     code: '', type: 'FIXED', value: '', currency: '', expiration_date: ''
   });
 
+  // New state for filters
+  const [filters, setFilters] = useState({
+    type: '',
+    currency: ''
+  });
+
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setForm({
+      ...form,
+      [name]: name === 'code' ? value.toUpperCase() : value
+    });
+  };
+
+  // Handle filter changes
+  const handleFilterChange = (e) => {
+    const { name, value } = e.target;
+    setFilters({
+      ...filters,
+      [name]: value
+    });
   };
 
   const openEdit = (coupon) => {
@@ -34,20 +52,18 @@ export default function CouponPage() {
       type: coupon.type,
       value: coupon.value,
       currency: coupon.currency,
-      expiration_date: expirationDate // Format date as YYYY-MM-DD
+      expiration_date: expirationDate
     });
     setDialogOpen(true);
   };
 
   const submitForm = async () => {
-    // Ensure 'value' is a valid number and fallback to 0 if invalid
     const parsedValue = parseFloat(form.value);
-    const formData = { 
-      ...form, 
-      value: isNaN(parsedValue) ? 0 : parsedValue // Handle invalid values
+    const formData = {
+      ...form,
+      value: isNaN(parsedValue) ? 0 : parsedValue
     };
 
-    // Remove __typename if it exists
     const { __typename, ...cleanedFormData } = formData;
 
     if (editData) {
@@ -56,10 +72,7 @@ export default function CouponPage() {
       await createCoupon({ variables: { input: cleanedFormData } });
     }
 
-    // Refetch data after creating or updating
     refetch();
-
-    // Close dialog and reset the form
     setDialogOpen(false);
     setForm({ code: '', type: 'FIXED', value: '', currency: '', expiration_date: '' });
     setEditData(null);
@@ -70,12 +83,52 @@ export default function CouponPage() {
     refetch();
   };
 
+  // Filter coupons based on filters state
+  const filteredCoupons = data?.getCoupons.filter(coupon => {
+    return (
+      (filters.type === '' || coupon.type === filters.type) &&
+      (filters.currency === '' || coupon.currency === filters.currency)
+    );
+  }) || [];
+
   return (
     <Box p={3}>
       <Typography variant="h4" gutterBottom>Coupons</Typography>
-      <Button variant="contained" onClick={() => setDialogOpen(true)}>Add Coupon</Button>
+
+      {/* Filters */}
+      <Box mb={2} display="flex" gap={2} flexWrap="wrap">
+        <TextField
+          select
+          label="Filtrer par type"
+          name="type"
+          value={filters.type}
+          onChange={handleFilterChange}
+          sx={{ minWidth: 150 }}
+        >
+          <MenuItem value="">Tous</MenuItem>
+          <MenuItem value="FIXED">Fixe</MenuItem>
+          <MenuItem value="PERCENT">Pourcentage</MenuItem>
+        </TextField>
+
+        <TextField
+          select
+          label="Filtrer par devise"
+          name="currency"
+          value={filters.currency}
+          onChange={handleFilterChange}
+          sx={{ minWidth: 150 }}
+        >
+          <MenuItem value="">Toutes</MenuItem>
+          <MenuItem value="USD">USD</MenuItem>
+          <MenuItem value="EUR">EUR</MenuItem>
+          <MenuItem value="XOF">XAF</MenuItem>
+        </TextField>
+      </Box>
+
+      <Button variant="contained" onClick={() => setDialogOpen(true)}>Ajouter un coupon</Button>
+
       <Grid container spacing={2} mt={2}>
-        {data?.getCoupons.map(coupon => (
+        {filteredCoupons.map(coupon => (
           <Grid item xs={12} md={4} key={coupon.id}>
             <Card>
               <CardContent>
@@ -86,41 +139,53 @@ export default function CouponPage() {
                     : `${coupon.value} ${coupon.currency}`}
                 </Typography>
                 <Typography>
-                  Expires: {new Date(parseInt(coupon.expiration_date)).toLocaleDateString()}
+                  Expire le : {new Date(parseInt(coupon.expiration_date)).toLocaleDateString('fr-FR')}
                 </Typography>
-                <Button onClick={() => openEdit(coupon)}>Edit</Button>
-                <Button onClick={() => handleDelete(coupon.id)} color="error">Delete</Button>
+                <Button onClick={() => openEdit(coupon)}>Modifier</Button>
+                <Button onClick={() => handleDelete(coupon.id)} color="error">Supprimer</Button>
               </CardContent>
             </Card>
-
           </Grid>
         ))}
       </Grid>
 
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
-        <DialogTitle>{editData ? 'Edit' : 'Create'} Coupon</DialogTitle>
+        <DialogTitle>{editData ? 'Modifier' : 'Créer'} un coupon</DialogTitle>
         <DialogContent>
           <TextField fullWidth margin="dense" name="code" label="Code" value={form.code} onChange={handleChange} />
           <TextField select fullWidth margin="dense" name="type" label="Type" value={form.type} onChange={handleChange}>
-            <MenuItem value="FIXED">Fixed</MenuItem>
-            <MenuItem value="PERCENT">Percent</MenuItem>
+            <MenuItem value="FIXED">Fixe</MenuItem>
+            <MenuItem value="PERCENT">Pourcentage</MenuItem>
           </TextField>
-          <TextField fullWidth margin="dense" name="value" label="Value" type="number" value={form.value} onChange={handleChange} />
-          <TextField fullWidth margin="dense" name="currency" label="Currency" value={form.currency} onChange={handleChange} />
-          <TextField 
-            fullWidth 
-            margin="dense" 
-            name="expiration_date" 
-            label="Expiration Date" 
-            type="date" 
-            value={form.expiration_date} 
-            onChange={handleChange} 
-            InputLabelProps={{ shrink: true }} 
+          <TextField fullWidth margin="dense" name="value" label="Valeur" type="number" value={form.value} onChange={handleChange} />
+          <TextField
+            select
+            fullWidth
+            margin="dense"
+            name="currency"
+            label="Devise"
+            value={form.currency}
+            onChange={handleChange}
+          >
+            <MenuItem value="USD">USD</MenuItem>
+            <MenuItem value="EUR">EUR</MenuItem>
+            <MenuItem value="XOF">XAF</MenuItem>
+          </TextField>
+
+          <TextField
+            fullWidth
+            margin="dense"
+            name="expiration_date"
+            label="Date d'expiration"
+            type="date"
+            value={form.expiration_date}
+            onChange={handleChange}
+            InputLabelProps={{ shrink: true }}
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDialogOpen(false)}>Cancel</Button>
-          <Button onClick={submitForm} variant="contained">Save</Button>
+          <Button onClick={() => setDialogOpen(false)}>Annuler</Button>
+          <Button onClick={submitForm} variant="contained">Enregistrer</Button>
         </DialogActions>
       </Dialog>
     </Box>

@@ -189,7 +189,7 @@ const ServiceDetailPage = () => {
                 Tarification ({locationInfo})
               </Typography>
               <Typography mb={4} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <DollarSign size={16} /> {geoPrice.amount} {geoPrice.currency}
+                <DollarSign size={20} /> {geoPrice.amount} {geoPrice.currency}
               </Typography>
             </>
           )}
@@ -219,7 +219,7 @@ const ServiceDetailPage = () => {
               {appliedCouponData && (
                 <Alert severity="success" sx={{ mt: 2 }}>
                   Code promo <strong>{appliedCouponData.appliedCoupon}</strong> appliqué !<br />
-                  {(() => {
+                  {/* {(() => {
                     const regional = appliedCouponData.prices.find(
                       (p) => p.region.toLowerCase() === geoPrice?.region.toLowerCase()
                     ) || appliedCouponData.prices[0];
@@ -230,7 +230,7 @@ const ServiceDetailPage = () => {
                         Prix réduit : {regional.discountedPrice.toFixed(2)} {regional.currency}
                       </>
                     );
-                  })()}
+                  })()} */}
                 </Alert>
               )}
 
@@ -271,8 +271,8 @@ const ServiceDetailPage = () => {
                     <Box mt={2} p={2} bgcolor="action.selected" borderRadius={1}>
                       <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
                         Prix avec coupon
-                      </Typography>
-                      <Typography variant="h6" color="primary">
+                      </Typography> 
+                      <Typography variant="h6" fontWeight="bold" color="primary">
                         {regional.discountedPrice.toFixed(2)} {regional.currency}
                       </Typography>
                       <Typography variant="caption" color="text.secondary">
@@ -295,7 +295,7 @@ const ServiceDetailPage = () => {
               variant="contained"
               fullWidth
               size="large"
-              onClick={() => navigate('/pages/login')}
+              onClick={() => navigate('/auth/login')}
               sx={{ mt: 3 }}
             >
               Réserver maintenant

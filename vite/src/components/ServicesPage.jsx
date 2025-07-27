@@ -75,7 +75,7 @@ const ServicesPage = ({ onNavigate }) => {
     { id: 'organisations', name: 'Organisations' },
   ];
   
-  const handleLogin = () => navigate('/pages/login');
+  const handleLogin = () => navigate('/auth/login');
   
   // Use data from GraphQL if available, otherwise fallback to empty array
   const services = localizedServices.length > 0 ? localizedServices : data?.services || [];
@@ -300,23 +300,21 @@ const ServicesPage = ({ onNavigate }) => {
                     alignItems="center"
                   >
                     <Box>
-                      <Typography variant="subtitle2" gutterBottom>
-                        {service.localizedPricing ? 
-                          `Tarif (${service.localizedPricing.region})` : 
-                          'Tarifs'}
+                      <Typography variant="subtitle1" gutterBottom>
+                       Tarif:
                       </Typography>
-                      {service.localizedPricing ? (
-                        <Typography variant="body2">
-                          {service.localizedPricing.amount} {service.localizedPricing.currency}
-                        </Typography>
-                      ) : (
-                        service.pricing.map((price, index) => (
-                          <Typography key={index} variant="body2">
-                            {price.region}: {price.amount} {price.currency}
-                          </Typography>
-                        ))
-                      )}
-                    </Box>
+                          {service.localizedPricing ? (
+                            <Typography variant="body2">
+                              {service.localizedPricing.amount} {service.localizedPricing.currency} /séance 
+                            </Typography>
+                          ) : (
+                            service.pricing.map((price, index) => (
+                              <Typography key={index} variant="body2">
+                                {price.region}: {price.amount} {price.currency} /séance
+                              </Typography>
+                            ))
+                          )}
+                        </Box>
                      <Button
                         size="small"
                         endIcon={<ArrowRight size={16} />}

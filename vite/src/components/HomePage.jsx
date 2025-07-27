@@ -159,7 +159,7 @@ const HomePage = ({ onNavigate }) => {
     if (scrollRef.current) scrollRef.current.scrollBy({ left: SCROLL_STEP, behavior: 'smooth' });
   };
 
-  const handleLogin = () => navigate('/pages/login');
+  const handleLogin = () => navigate('/auth/login');
 
   return (
     <Box sx={{ overflowX: 'hidden' }}>
@@ -256,12 +256,12 @@ const HomePage = ({ onNavigate }) => {
                     <Box sx={{ mb: 2 }}>
                       {service.localizedPricing ? (
                         <Typography variant="caption" color="text.secondary" sx={{ fontWeight: '600', display: 'block' }}>
-                          {service.localizedPricing.region}: {service.localizedPricing.amount} {service.localizedPricing.currency}
+                           Tarif: {service.localizedPricing.amount} {service.localizedPricing.currency} /séance
                         </Typography>
                       ) : (
                         service.pricing.map((price, index) => (
                           <Typography key={index} variant="caption" color="text.secondary" sx={{ fontWeight: '600', display: 'block' }}>
-                            {price.region}: {price.amount} {price.currency}
+                           Tarif: {price.amount} {price.currency} /séance
                           </Typography>
                         ))
                       )}
@@ -306,12 +306,12 @@ const HomePage = ({ onNavigate }) => {
                   <Box sx={{ mb: 2 }}>
                     {service.localizedPricing ? (
                       <Typography variant="caption" color="text.secondary" sx={{ fontWeight: '600', display: 'block' }}>
-                        {service.localizedPricing.region}: {service.localizedPricing.amount} {service.localizedPricing.currency}
+                       Tarif: {service.localizedPricing.amount} {service.localizedPricing.currency} /séance
                       </Typography>
                     ) : (
                       service.pricing.map((price, index) => (
                         <Typography key={index} variant="caption" color="text.secondary" sx={{ fontWeight: '600', display: 'block' }}>
-                          {price.region}: {price.amount} {price.currency}
+                          Tarif: {price.amount} {price.currency} /séance
                         </Typography>
                       ))
                     )}

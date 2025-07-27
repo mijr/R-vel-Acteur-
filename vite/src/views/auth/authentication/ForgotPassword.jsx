@@ -22,7 +22,7 @@ import AuthFooter from 'ui-component/cards/AuthFooter';
 export default function ForgotPassword() {
   const downMD = useMediaQuery((theme) => theme.breakpoints.down('md'));
 
-  const [step, setStep] = useState(1); // Step 1: email, Step 2: OTP & new password
+  const [step, setStep] = useState(1);
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -33,7 +33,7 @@ export default function ForgotPassword() {
 
   const handleRequestOTP = async () => {
     if (!email.trim()) {
-      setError('Please enter your email address.');
+      setError("Veuillez saisir votre adresse e-mail.");
       return;
     }
 
@@ -60,13 +60,13 @@ export default function ForgotPassword() {
         setError(result.errors[0].message);
       } else if (result.data?.requestPasswordReset) {
         setStep(2);
-        setSuccess('✅ OTP sent to your email.');
+        setSuccess("Un code OTP a été envoyé à votre adresse e-mail.");
       } else {
-        setError('Something went wrong. Please try again.');
+        setError("Une erreur s'est produite. Veuillez réessayer.");
       }
     } catch (err) {
       console.error(err);
-      setError('Network error. Please try again.');
+      setError("Erreur réseau. Veuillez réessayer.");
     } finally {
       setLoading(false);
     }
@@ -74,7 +74,7 @@ export default function ForgotPassword() {
 
   const handleResetPassword = async () => {
     if (!otp.trim() || !newPassword.trim()) {
-      setError('Please enter both OTP and your new password.');
+      setError("Veuillez saisir le code OTP et votre nouveau mot de passe.");
       return;
     }
 
@@ -101,11 +101,11 @@ export default function ForgotPassword() {
         setError(result.errors[0].message);
       } else {
         setSubmitted(true);
-        setSuccess('🎉 Password reset successfully. You can now log in.');
+        setSuccess("🎉 Mot de passe réinitialisé avec succès. Vous pouvez maintenant vous connecter.");
       }
     } catch (err) {
       console.error(err);
-      setError('Network error. Please try again.');
+      setError("Erreur réseau. Veuillez réessayer.");
     } finally {
       setLoading(false);
     }
@@ -128,12 +128,12 @@ export default function ForgotPassword() {
                   <Grid item xs={12}>
                     <Stack spacing={1} alignItems="center">
                       <Typography variant={downMD ? 'h4' : 'h3'} sx={{ color: 'secondary.main' }}>
-                        Forgot Password?
+                        Mot de passe oublié ?
                       </Typography>
                       <Typography variant="body2" sx={{ textAlign: 'center' }}>
                         {step === 1
-                          ? "Enter your registered email and we'll send you an OTP."
-                          : 'Enter the OTP sent to your email and your new password.'}
+                          ? "Saisissez votre e-mail, un code OTP vous sera envoyé."
+                          : "Saisissez le code OTP reçu et votre nouveau mot de passe."}
                       </Typography>
                     </Stack>
                   </Grid>
@@ -149,7 +149,7 @@ export default function ForgotPassword() {
                         {step === 1 ? (
                           <>
                             <TextField
-                              label="Email Address"
+                              label="Adresse e-mail"
                               type="email"
                               fullWidth
                               value={email}
@@ -163,13 +163,13 @@ export default function ForgotPassword() {
                               onClick={handleRequestOTP}
                               disabled={loading}
                             >
-                              {loading ? <CircularProgress size={24} color="inherit" /> : 'Send OTP'}
+                              {loading ? <CircularProgress size={24} color="inherit" /> : "Envoyer le code OTP"}
                             </Button>
                           </>
                         ) : (
                           <>
                             <TextField
-                              label="OTP Code"
+                              label="Code OTP"
                               type="text"
                               fullWidth
                               value={otp}
@@ -177,7 +177,7 @@ export default function ForgotPassword() {
                               required
                             />
                             <TextField
-                              label="New Password"
+                              label="Nouveau mot de passe"
                               type="password"
                               fullWidth
                               value={newPassword}
@@ -190,7 +190,7 @@ export default function ForgotPassword() {
                               onClick={handleResetPassword}
                               disabled={loading}
                             >
-                              {loading ? <CircularProgress size={24} color="inherit" /> : 'Reset Password'}
+                              {loading ? <CircularProgress size={24} color="inherit" /> : "Réinitialiser le mot de passe"}
                             </Button>
                           </>
                         )}
@@ -204,8 +204,8 @@ export default function ForgotPassword() {
 
                   <Grid item xs={12}>
                     <Grid container justifyContent="center">
-                      <Typography component={Link} to="/pages/login" variant="body2" sx={{ textDecoration: 'none' }}>
-                        ← Back to Login
+                      <Typography component={Link} to="/auth/login" variant="body2" sx={{ textDecoration: 'none' }}>
+                        ← Retour à la connexion
                       </Typography>
                     </Grid>
                   </Grid>

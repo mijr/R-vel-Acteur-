@@ -34,7 +34,7 @@ const TestimonialsPage = () => {
 
   const { loading, error, data } = useQuery(GET_TESTIMONIALS);
 
-  const handleLogin = () => navigate('/pages/login');
+  const handleLogin = () => navigate('/auth/login');
 
   const categories = [
     { id: 'all', name: 'Tous les témoignages' },

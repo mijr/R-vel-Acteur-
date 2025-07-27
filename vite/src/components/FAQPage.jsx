@@ -51,7 +51,7 @@ const FAQPage = () => {
       faq.answer.toLowerCase().includes(searchTerm.toLowerCase());
     return categoryMatch && searchMatch;
   });
-   const handleLogin = () => navigate('/pages/login');
+   const handleLogin = () => navigate('/auth/login');
   return (
     <Box sx={{ minHeight: '100vh', backgroundColor: '#f9fafb' }}>
       {/* Header */}

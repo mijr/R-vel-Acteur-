@@ -29,7 +29,7 @@ const Header = ({ currentPage, onNavigate }) => {
     { name: 'Blog', id: 'blog' },
   ];
 
-   const handleLogin = () => navigate('/pages/login');
+   const handleLogin = () => navigate('/auth/login');
 
   return (
     <>

@@ -19,9 +19,9 @@ const UtilsBlog = Loadable(lazy(() =>import('views/utilities/Blog') ));
 const UtilsSociologicalDashboard = Loadable(lazy(() =>import('views/utilities/SociologicalDashboard') ));
 const UtilsUserDashboard = Loadable(lazy(() =>import('views/utilities/UserDashboard') ));
 const Coupon = Loadable(lazy(() => import('views/utilities/Coupon')));
-// sample page routing
-const UserProfile = Loadable(lazy(() => import('views/sample-page/UserProfile')));
-const Profile = Loadable(lazy(() => import('views/sample-page/Profile')));
+// profile page routing
+const UserProfile = Loadable(lazy(() => import('views/profile/UserProfile')));
+const Profile = Loadable(lazy(() => import('views/profile/Profile')));
 // ==============================|| MAIN ROUTING ||============================== //
 
 const MainRoutes = {
@@ -34,13 +34,9 @@ const MainRoutes = {
     },
     {
       path: 'dashboard',
-      children: [
-        {
-          path: 'default',
-          element: <DashboardDefault />
-        }
-      ]
+      element: <DashboardDefault />
     },
+
     {
       path: 'AppointmentList',
       element: <AppointmentList />

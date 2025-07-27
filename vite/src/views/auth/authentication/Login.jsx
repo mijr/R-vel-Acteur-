@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { useNavigate } from 'react-router-dom';
+
 import useMediaQuery from '@mui/material/useMediaQuery';
 import Divider from '@mui/material/Divider';
 import Grid from '@mui/material/Grid';
@@ -9,14 +9,15 @@ import Typography from '@mui/material/Typography';
 // project imports
 import AuthWrapper1 from './AuthWrapper1';
 import AuthCardWrapper from './AuthCardWrapper';
-import AuthRegister from '../auth-forms/AuthRegister';
+import AuthLogin from '../auth-forms/AuthLogin';
 
 import Logo from 'ui-component/Logo';
 import AuthFooter from 'ui-component/cards/AuthFooter';
 
-export default function Register() {
+// ================================|| AUTH3 - LOGIN ||================================ //
+
+export default function Login() {
   const downMD = useMediaQuery((theme) => theme.breakpoints.down('md'));
-   
 
   return (
     <AuthWrapper1>
@@ -27,7 +28,7 @@ export default function Register() {
               <AuthCardWrapper>
                 <Grid container spacing={2} sx={{ alignItems: 'center', justifyContent: 'center' }}>
                   <Grid sx={{ mb: 3 }}>
-                    <Link to="#" aria-label="theme logo">
+                    <Link to="/" aria-label="logo">
                       <Logo />
                     </Link>
                   </Grid>
@@ -36,25 +37,25 @@ export default function Register() {
                       <Grid>
                         <Stack spacing={1} sx={{ alignItems: 'center', justifyContent: 'center' }}>
                           <Typography gutterBottom variant={downMD ? 'h3' : 'h2'} sx={{ color: 'secondary.main' }}>
-                            Sign up
+                            Salut, Bon retour !
                           </Typography>
                           <Typography variant="caption" sx={{ fontSize: '16px', textAlign: { xs: 'center', md: 'inherit' } }}>
-                            Enter your details to continue
+                            Entrez vos informations pour continuer
                           </Typography>
                         </Stack>
                       </Grid>
                     </Grid>
                   </Grid>
                   <Grid size={12}>
-                    <AuthRegister />
+                    <AuthLogin />
                   </Grid>
                   <Grid size={12}>
                     <Divider />
                   </Grid>
                   <Grid size={12}>
                     <Grid container direction="column" sx={{ alignItems: 'center' }} size={12}>
-                      <Typography component={Link} to="/pages/login" variant="subtitle1" sx={{ textDecoration: 'none' }}>
-                        Already have an account?
+                      <Typography component={Link} to="/auth/register" variant="subtitle1" sx={{ textDecoration: 'none' }}>
+                        Vous n'avez pas de compte ? Inscrivez-vous
                       </Typography>
                     </Grid>
                   </Grid>
@@ -63,7 +64,7 @@ export default function Register() {
             </Grid>
           </Grid>
         </Grid>
-        <Grid sx={{ px: 3, mb: 3, mt: 1 }} size={12}>
+        <Grid sx={{ px: 3, my: 3 }} size={12}>
           <AuthFooter />
         </Grid>
       </Grid>

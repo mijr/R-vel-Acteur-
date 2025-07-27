@@ -664,7 +664,7 @@ const AddServicePage = () => {
                 </Select>
               </FormControl>
 
-              {form.billingMode.type === 'subscription' && (
+              {form.billingMode.type === 'abonnement' && (
                 <FormControl fullWidth margin="normal">
                   <InputLabel>Périodicité</InputLabel>
                   <Select
@@ -681,7 +681,7 @@ const AddServicePage = () => {
                 </FormControl>
               )}
 
-              {form.billingMode.type === 'installment' && (
+              {form.billingMode.type === 'versements' && (
                 <TextField
                   label="Nombre de versements"
                   type="number"
