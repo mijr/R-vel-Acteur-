@@ -8,6 +8,7 @@ import {
   IconButton,
   Link,
 } from '@mui/material';
+import Logo from '../assets/images/RA_logo_blanc.png'
 
 const Footer = () => {
   return (
@@ -16,26 +17,24 @@ const Footer = () => {
         <Grid container spacing={4}>
           {/* Company Info */}
           <Grid item xs={12} md={6}>
-            <Box display="flex" alignItems="center" mb={2}>
-              <Box
-                sx={{
-                  width: 32,
-                  height: 32,
-                  backgroundColor: 'skyblue',
-                  borderRadius: 2,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
+             <Box
+                display="flex"
+                alignItems="center"
+                sx={{ cursor: 'pointer' }}
+                onClick={() => onNavigate('home')}
               >
-                <Typography fontWeight="bold" variant="body1" color="#fff">
-                  R
-                </Typography>
+                <Box
+                  component="img"
+                  src={Logo}   // Use the imported Logo here
+                  alt="Logo"
+                  sx={{
+                    width: 100,
+                    height: 100,
+                    borderRadius: 2,
+                    objectFit: 'contain',
+                  }}
+                />
               </Box>
-              <Typography variant="h6" fontWeight="bold" ml={1}>
-                Rével'Acteur!
-              </Typography>
-            </Box>
             <Typography variant="body2" color="gray.300" maxWidth="md" mb={2}>
               Accompagnement professionnel en coaching, formation et médiation. 
               Révélez votre potentiel et celui de vos équipes avec des méthodes éprouvées.

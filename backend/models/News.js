@@ -5,7 +5,11 @@ module.exports = (sequelize, DataTypes) => {
     description: { type: DataTypes.TEXT, allowNull: false },
     type: { type: DataTypes.STRING, allowNull: false },
     image: { type: DataTypes.STRING, allowNull: true },
-    featured: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
+    featured: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false }
+  }, {
+    timestamps: true,
+    underscored: true,
+    tableName: 'News'
   });
 
   return News;

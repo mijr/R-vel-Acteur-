@@ -6,7 +6,8 @@ module.exports = (sequelize, DataTypes) => {
     currency: { type: DataTypes.STRING, allowNull: false },
     expiration_date: { type: DataTypes.DATE, allowNull: false }
   }, {
-    timestamps: true,
+       timestamps: true,
+    underscored: true,      // << Add this line
     tableName: 'Coupons'
   });
 

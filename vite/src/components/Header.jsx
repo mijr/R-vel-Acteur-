@@ -15,6 +15,7 @@ import {
   Divider,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import Logo from '../assets/images/RA_logo_2.png'
 
 const Header = ({ currentPage, onNavigate }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -36,32 +37,26 @@ const Header = ({ currentPage, onNavigate }) => {
       <AppBar position="sticky" color="inherit" elevation={1}>
         <Toolbar sx={{ justifyContent: 'space-between' }}>
           {/* Logo */}
-          <Box
+         <Box
             display="flex"
             alignItems="center"
             sx={{ cursor: 'pointer' }}
             onClick={() => onNavigate('home')}
           >
             <Box
+              component="img"
+              src={Logo}   // Use the imported Logo here
+              alt="Logo"
               sx={{
-                width: 32,
-                height: 32,
-                bgcolor: 'skyblue',
+                width: 100,
+                height: 80,
                 borderRadius: 2,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: '#fff',
-                fontWeight: 'bold',
-                fontSize: '1rem',
+                objectFit: 'contain',
               }}
-            >
-              R
-            </Box>
-            <Typography variant="h6" ml={1} fontWeight="bold">
-              Rével'Acteur!
-            </Typography>
+            />
           </Box>
+
+
 
           {/* Desktop Navigation */}
           <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 3 }}>

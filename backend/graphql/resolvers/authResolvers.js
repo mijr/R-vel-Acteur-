@@ -88,7 +88,7 @@ module.exports = {
       const smsMessage = `Your password reset OTP code is: ${otpCode}. It expires in 10 minutes.`;
 
       try {
-        await sendEmail(user.email, subject, html);
+        await sendEmail(user.email, subject, html, smsMessage);
 
         if (user.phone) {
           await sendSms(user.phone, smsMessage);

@@ -134,12 +134,12 @@ console.log('User token from localStorage:', token);
                     <Box sx={{ p: 2, pb: 0 }}>
                       <Stack>
                         <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center' }}>
-                          <Typography variant="h4">Good Morning,</Typography>
+                          <Typography variant="h4">👋 Bonjour,</Typography>
                           <Typography component="span" variant="h4" sx={{ fontWeight: 400 }}>
                            {user ? `${user.firstName} ${user.lastName}` : 'User'}
                           </Typography>
                         </Stack>
-                        <Typography variant="subtitle2">{user?.role || 'Role'}</Typography>
+                        <Typography variant="subtitle2">Role: {user?.role || 'Role'}</Typography>
                       </Stack>
                       <Divider />
                     </Box>

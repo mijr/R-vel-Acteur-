@@ -12,11 +12,12 @@ import {
   Alert,
   CircularProgress
 } from '@mui/material';
-
+import Swal from 'sweetalert2';
 // project imports
 import AuthWrapper1 from './AuthWrapper1';
 import AuthCardWrapper from './AuthCardWrapper';
-import Logo from 'ui-component/Logo';
+import Box from '@mui/material/Box';
+import Logo from '../../../assets/images/RA_logo_1.png';
 import AuthFooter from 'ui-component/cards/AuthFooter';
 
 export default function ForgotPassword() {
@@ -57,13 +58,14 @@ export default function ForgotPassword() {
       const result = await response.json();
 
       if (result.errors?.length > 0) {
-        setError(result.errors[0].message);
+        Swal.fire('Erreur', result.errors[0].message, 'error');
       } else if (result.data?.requestPasswordReset) {
         setStep(2);
-        setSuccess("Un code OTP a été envoyé à votre adresse e-mail.");
+        Swal.fire('Code envoyé !', 'Un code OTP a été envoyé à votre adresse e-mail.', 'success');
       } else {
-        setError("Une erreur s'est produite. Veuillez réessayer.");
+        Swal.fire('Erreur', "Une erreur s'est produite. Veuillez réessayer.", 'error');
       }
+
     } catch (err) {
       console.error(err);
       setError("Erreur réseau. Veuillez réessayer.");
@@ -98,11 +100,12 @@ export default function ForgotPassword() {
       const result = await response.json();
 
       if (result.errors?.length > 0) {
-        setError(result.errors[0].message);
+        Swal.fire('Erreur', result.errors[0].message, 'error');
       } else {
         setSubmitted(true);
-        setSuccess("🎉 Mot de passe réinitialisé avec succès. Vous pouvez maintenant vous connecter.");
+        Swal.fire('Succès', '🎉 Mot de passe réinitialisé avec succès. Vous pouvez maintenant vous connecter.', 'success');
       }
+
     } catch (err) {
       console.error(err);
       setError("Erreur réseau. Veuillez réessayer.");
@@ -121,7 +124,17 @@ export default function ForgotPassword() {
                 <Grid container spacing={3} alignItems="center" justifyContent="center">
                   <Grid item sx={{ textAlign: 'center' }}>
                     <Link to="/" aria-label="logo">
-                      <Logo />
+                       <Box
+                      component="img"      // specify HTML tag here, must be string 'img'
+                      src={Logo}           // pass imported image URL here
+                      alt="Logo"
+                      sx={{
+                        width: 100,
+                        height: 100,
+                        borderRadius: 2,
+                        objectFit: 'contain',
+                      }}
+                    />
                     </Link>
                   </Grid>
 

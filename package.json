@@ -1,0 +1,20 @@
+{
+  "name": "r-vel-acteur-",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mijr/R-vel-Acteur-.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mijr/R-vel-Acteur-/issues"
+  },
+  "homepage": "https://github.com/mijr/R-vel-Acteur-#readme"
+}

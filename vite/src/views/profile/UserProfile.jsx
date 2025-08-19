@@ -17,6 +17,7 @@ import { DatePicker } from '@mui/x-date-pickers';
 import { format } from 'date-fns';
 import dayjs from 'dayjs';
 import { GET_USER_PROFILE, UPDATE_USER_PROFILE } from '../../graphql/queries';
+import { useGeoLocation } from '../../constants/useGeoLocation';
 
 const GET_ME = gql`
   query Me {
@@ -49,6 +50,7 @@ const CURRENCIES = [
 ];
 
 function UserProfile() {
+  const geoLocation = useGeoLocation();
   const { data: meData, loading: meLoading, error: meError } = useQuery(GET_ME);
   const userId = meData?.me?.id;
 
@@ -86,6 +88,15 @@ function UserProfile() {
     });
   }
 }, [data]);
+
+useEffect(() => {
+    if (!form.currency && geoLocation?.country) {
+      const currency = COUNTRY_TO_CURRENCY[geoLocation.country] || '';
+      if (currency) {
+        setForm((prev) => ({ ...prev, currency }));
+      }
+    }
+  }, [geoLocation, form.currency]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -132,7 +143,7 @@ function UserProfile() {
   );
 
   return (
-    <Box p={3} maxWidth="md" mx="auto">
+    <Box p={5} maxWidth="100" mx="auto">
       <Paper elevation={3} sx={{ p: 3 }}>
         <Box display="flex" alignItems="center" mb={4}>
           <Avatar 
@@ -157,7 +168,7 @@ function UserProfile() {
         )}
 
         <form onSubmit={handleSubmit}>
-          <Grid container spacing={3}>
+          <Grid container spacing={4}>
             <Grid item xs={12} md={6}>
               <TextField
                 label="Devise"

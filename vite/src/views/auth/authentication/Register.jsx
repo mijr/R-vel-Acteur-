@@ -9,8 +9,9 @@ import Typography from '@mui/material/Typography';
 import AuthWrapper1 from './AuthWrapper1';
 import AuthCardWrapper from './AuthCardWrapper';
 import AuthRegister from '../auth-forms/AuthRegister';
+import Box from '@mui/material/Box';
+import Logo from '../../../assets/images/RA_logo_1.png';
 
-import Logo from 'ui-component/Logo';
 import AuthFooter from 'ui-component/cards/AuthFooter';
 
 export default function Register() {
@@ -26,7 +27,17 @@ export default function Register() {
                 <Grid container spacing={2} sx={{ alignItems: 'center', justifyContent: 'center' }}>
                   <Grid item sx={{ mb: 3 }}>
                     <Link to="#" aria-label="theme logo">
-                      <Logo />
+                     <Box
+                      component="img"      // specify HTML tag here, must be string 'img'
+                      src={Logo}           // pass imported image URL here
+                      alt="Logo"
+                      sx={{
+                        width: 100,
+                        height: 100,
+                        borderRadius: 2,
+                        objectFit: 'contain',
+                      }}
+                    />
                     </Link>
                   </Grid>
                   <Grid item xs={12}>
