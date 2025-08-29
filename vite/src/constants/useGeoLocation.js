@@ -8,16 +8,18 @@ export const useGeoLocation = () => {
   useEffect(() => {
     const fetchIPAndGeo = async () => {
       try {
+        // First get IP
         const ipResponse = await fetch('https://api.ipify.org?format=json');
         if (!ipResponse.ok) throw new Error('Failed to fetch IP');
         const ipData = await ipResponse.json();
 
-        const geoResponse = await fetch(`http://ip-api.com/json/${ipData.ip}`);
+        // Then get geolocation using ipapi.co
+        const geoResponse = await fetch(`https://ipapi.co/${ipData.ip}/json/`);
         if (!geoResponse.ok) throw new Error('Failed to fetch geolocation');
         const geoData = await geoResponse.json();
 
-        if (geoData.status !== 'success') {
-          throw new Error('Geolocation API returned error');
+        if (geoData.error) {
+          throw new Error(geoData.reason || 'Geolocation API returned error');
         }
 
         setLocation(geoData);

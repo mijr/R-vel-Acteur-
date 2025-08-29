@@ -109,7 +109,6 @@ const HomePage = ({ onNavigate }) => {
   const scrollRef = useRef(null);
   const navigate = useNavigate();
   const { location, isLoading: geoLoading, isError: geoError } = useGeoLocation();
-  console.log(location)
   const { data: servicesData, loading: servicesLoading, error: servicesError } = useQuery(GET_SERVICES);
   const { data: newsData, loading: newsLoading, error: newsError } = useQuery(GET_NEWS);
   const { data: testimonialsData, loading: testimonialsLoading, error: testimonialsError } = useQuery(GET_TESTIMONIALS);
